@@ -13,7 +13,6 @@ public interface Config {
 
     EmailConfig email();
     EventsConfig events();
-    DynamoDbConfig dynamodb();
 
     PageConfig page();
 
@@ -26,11 +25,6 @@ public interface Config {
         String jsonUrl();
         String dataBucket();
         String dataKey();
-    }
-
-    interface DynamoDbConfig {
-        String table();
-        String index();
     }
 
     interface TenantConfig {
