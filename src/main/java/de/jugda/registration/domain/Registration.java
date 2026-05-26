@@ -2,20 +2,25 @@ package de.jugda.registration.domain;
 
 import de.jugda.registration.model.RegistrationDto;
 import de.jugda.registration.model.RegistrationForm;
+import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import org.hibernate.annotations.TenantId;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Map;
 
 @Entity
-public class Registration {
+public class Registration extends PanacheEntityBase {
     @Id
     @GeneratedValue
     private String id;
+    @TenantId
+    @Column(name = "tenant")
+    private String tenant;
     private String eventId;
     private String name;
     private String email;
@@ -34,6 +39,14 @@ public class Registration {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getTenant() {
+        return tenant;
+    }
+
+    public void setTenant(String tenantId) {
+        this.tenant = tenantId;
     }
 
     public String getEventId() {

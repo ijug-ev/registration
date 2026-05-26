@@ -19,7 +19,7 @@ import java.util.List;
 public class RegistrationDao {
 
     @Inject
-    private EntityManager em;
+    EntityManager em;
 
     @Transactional
     public void save(Registration registration) {

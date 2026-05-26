@@ -1,6 +1,7 @@
-CREATE TABLE Event
+CREATE TABLE event
 (
     uid         VARCHAR(255) NOT NULL,
+    tenant      VARCHAR(255) NOT NULL,
     eventId     VARCHAR(255),
     summary     VARCHAR(255),
     title       VARCHAR(255),
@@ -15,9 +16,10 @@ CREATE TABLE Event
     CONSTRAINT pk_event PRIMARY KEY (uid)
 );
 
-CREATE TABLE Registration
+CREATE TABLE registration
 (
     id             VARCHAR(255) NOT NULL,
+    tenant         VARCHAR(255) NOT NULL,
     eventId        VARCHAR(255),
     name           VARCHAR(255),
     email          VARCHAR(255),

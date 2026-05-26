@@ -1,20 +1,25 @@
 package de.jugda.registration.domain;
 
 import de.jugda.registration.model.EventDto;
+import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import org.hibernate.annotations.TenantId;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
-public class Event {
+public class Event extends PanacheEntityBase {
 
     @Id
     @GeneratedValue
     private String uid;
+    @TenantId
+    @Column(name = "tenant")
+    private String tenant;
     private String eventId;
     private String summary;
     private String title;
@@ -45,6 +50,14 @@ public class Event {
 
     public String getUid() {
         return uid;
+    }
+
+    public String getTenant() {
+        return tenant;
+    }
+
+    public void setTenant(String tenantId) {
+        this.tenant = tenantId;
     }
 
     public String getEventId() {
@@ -139,18 +152,19 @@ public class Event {
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof Event event)) return false;
-        return Objects.equals(uid, event.uid) && Objects.equals(summary, event.summary) && Objects.equals(title, event.title) && Objects.equals(description, event.description) && Objects.equals(speaker, event.speaker) && Objects.equals(twitter, event.twitter) && Objects.equals(location, event.location) && Objects.equals(url, event.url) && Objects.equals(startDate, event.startDate) && Objects.equals(endDate, event.endDate) && Objects.equals(timezone, event.timezone);
+        return Objects.equals(uid, event.uid) && Objects.equals(tenant, event.tenant) && Objects.equals(summary, event.summary) && Objects.equals(title, event.title) && Objects.equals(description, event.description) && Objects.equals(speaker, event.speaker) && Objects.equals(twitter, event.twitter) && Objects.equals(location, event.location) && Objects.equals(url, event.url) && Objects.equals(startDate, event.startDate) && Objects.equals(endDate, event.endDate) && Objects.equals(timezone, event.timezone);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(uid, summary, title, description, speaker, twitter, location, url, startDate, endDate, timezone);
+        return Objects.hash(uid, tenant, summary, title, description, speaker, twitter, location, url, startDate, endDate, timezone);
     }
 
     @Override
     public String toString() {
         return "Event{" +
             "uid='" + uid + '\'' +
+            ", tenant='" + tenant + '\'' +
             ", summary='" + summary + '\'' +
             ", title='" + title + '\'' +
             ", description='" + description + '\'' +

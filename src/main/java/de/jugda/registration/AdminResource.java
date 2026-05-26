@@ -5,7 +5,6 @@ import de.jugda.registration.model.RegistrationDto;
 import de.jugda.registration.service.EmailService;
 import de.jugda.registration.service.EventService;
 import de.jugda.registration.service.ListService;
-import de.jugda.registration.service.RegistrationService;
 import io.quarkus.qute.Location;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
@@ -26,10 +25,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-/**
- * @author Niko Köbler, http://www.n-k.de, @dasniko
- */
-@Path("admin/events")
+@Path("admin/{tenant}/events")
 @Produces(MediaType.TEXT_HTML)
 @Authenticated
 public class AdminResource {
@@ -46,8 +42,9 @@ public class AdminResource {
     Template overview;
     @Location("admin/list")
     Template list;
+
     @Inject
-    RegistrationService registrationService;
+    TenantContext tenant; // TODO
 
     @GET
     public TemplateInstance getAllEvents() {

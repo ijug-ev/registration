@@ -1,21 +1,15 @@
-version: '2.1'
-
 services:
   database:
-    image: postgres
+    image: postgres:18-alpine
     ports:
       - "5432:5432"
-    restart: always
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
       POSTGRES_DB: registration_db
-    volumes:
-      - ./db/ddl.sql:/docker-entrypoint-initdb.d/ddl.sql
+
   mailpit:
     image: docker.io/axllent/mailpit
-    restart: unless-stopped
     ports:
       - "1025:1025"
       - "8025:8025"
-

@@ -15,7 +15,7 @@ import java.util.List;
 public class EventDao {
 
      @Inject
-     private EntityManager em;
+     EntityManager em;
 
      @Transactional
      public void createEvent(Event event){
@@ -44,7 +44,7 @@ public class EventDao {
          if(resultList.isEmpty()){
              return null;
          }
-         return resultList.get(0);
+         return resultList.getFirst();
      }
 
 }
