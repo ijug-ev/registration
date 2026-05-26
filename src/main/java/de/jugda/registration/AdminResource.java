@@ -9,6 +9,7 @@ import de.jugda.registration.service.RegistrationService;
 import io.quarkus.qute.Location;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
+import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
  */
 @Path("admin/events")
 @Produces(MediaType.TEXT_HTML)
+@Authenticated
 public class AdminResource {
 
     @Inject
