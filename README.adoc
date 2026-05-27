@@ -73,9 +73,12 @@ see link:misc/run-http-requests-manually.adoc[here]
 
 == Build
 
-Native, Docker will be used.
+There is a link:.github/workflows/docker.yml[GH action] to build and push a (multi-platform arm64/amd64) Docker image to `ghcr.io/CyberLandConf/registration:<version>`.
 
- $ mvn clean package -Pnative
+This action runs either
+
+* on pushs to `main` branch, then the image version tag will be `latest`
+* on git tag pushes in format `v.1.2.3`, then the image version tag will be `1.2.3`
 
 == Deployment
 
