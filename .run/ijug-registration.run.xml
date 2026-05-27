@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="ijug-registration" type="QuarkusRunConfigurationType" factoryName="Quarkus">
-    <module name="jugda-registration" />
+    <module name="ijug-registration" />
     <QsMavenRunConfiguration>
       <MavenSettings>
         <option name="myGeneralSettings" />
