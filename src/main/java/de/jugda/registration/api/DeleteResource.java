@@ -1,4 +1,4 @@
-package de.jugda.registration;
+package de.jugda.registration.api;
 
 import de.jugda.registration.model.DeregistrationForm;
 import de.jugda.registration.service.DeleteService;

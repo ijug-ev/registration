@@ -1,5 +1,7 @@
-package de.jugda.registration;
+package de.jugda.registration.api;
 
+import de.jugda.registration.Config;
+import de.jugda.registration.TenantContext;
 import de.jugda.registration.model.EventDto;
 import de.jugda.registration.service.EventService;
 import io.quarkus.qute.Location;

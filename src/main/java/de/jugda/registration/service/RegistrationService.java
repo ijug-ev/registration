@@ -3,7 +3,6 @@ package de.jugda.registration.service;
 import de.jugda.registration.dao.RegistrationDao;
 import de.jugda.registration.domain.Registration;
 import de.jugda.registration.model.RegistrationForm;
-import de.jugda.registration.slack.SlackWebClient;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -19,8 +18,6 @@ public class RegistrationService {
     RegistrationDao registrationDao;
     @Inject
     EmailService emailService;
-    @Inject
-    SlackWebClient slack;
 
     public int getRegistrationCount(String eventId) {
         return registrationDao.getCount(eventId);
@@ -58,18 +55,7 @@ public class RegistrationService {
             emailService.sendRegistrationConfirmation(savedRegistration.toDto());
         }
 
-        notifySlack(registration.getEventId(), model.getLimit());
-
         return model;
-    }
-
-    private void notifySlack(String eventId, int limit) {
-        int registrationCount = getRegistrationCount(eventId);
-        if (((float) registrationCount / (float) limit) >= 0.9) {
-            String message = String.format(":bangbang: Event %1$s hat mehr als 90%% Anmeldungen (%2$d):\nhttps://registration.jug-da.de/admin/events/%1$s",
-                eventId, registrationCount);
-            slack.postMessage(message, System.getenv("SLACK_CHANNEL_GENERAL"));
-        }
     }
 
 }

@@ -1,4 +1,4 @@
-package de.jugda.registration;
+package de.jugda.registration.api;
 
 import biweekly.Biweekly;
 import biweekly.ICalendar;
@@ -7,6 +7,7 @@ import biweekly.io.TimezoneAssignment;
 import biweekly.property.Classification;
 import biweekly.property.Organizer;
 import biweekly.property.Status;
+import de.jugda.registration.TenantContext;
 import de.jugda.registration.model.EventDto;
 import de.jugda.registration.service.EventService;
 import jakarta.inject.Inject;

@@ -1,5 +1,6 @@
-package de.jugda.registration;
+package de.jugda.registration.api.authenticated;
 
+import de.jugda.registration.TenantContext;
 import de.jugda.registration.model.EventDto;
 import de.jugda.registration.model.RegistrationDto;
 import de.jugda.registration.service.EmailService;

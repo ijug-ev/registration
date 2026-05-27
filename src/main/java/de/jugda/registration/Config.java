@@ -2,9 +2,7 @@ package de.jugda.registration;
 
 import io.smallrye.config.ConfigMapping;
 
-/**
- * @author Niko Köbler, https://www.n-k.de, @dasniko
- */
+@Deprecated
 @ConfigMapping(prefix = "app")
 public interface Config {
 
