@@ -51,28 +51,21 @@ Root page is `/registration?eventId=...`.
 
 * JDK 21+
 * IDE
-* Maven 3.6.2+
-[[local-environment]]
-* Docker (optional, for local development)
+* Maven 3.9+ _(Maven wrapper is included)_
+* Docker (for local development using the Quarkus DevServices)
 
-=== Development with profile `local`
+=== Development with default `dev` profile
 
-* For <<local-environment,local AWS development>>, simply power up the provided `docker-compose.yml` file in the `src/docker` folder with `docker compose up` command. +
-The container will start and initialize all the needed resoures like PostgreSQL and Mailpit.
+For local development, simply power up the the Quarkus application,
+
+* either by using the link:.run/ijug-registration.run.xml[provided IntelliJ run configuration]
+* or by executing https://quarkus.io/guides/maven-tooling#development-mode[Quarkus Development Mode] on the command line (terminal): `mvn compile quarkus:dev`
+
+This starts Quarkus in `dev` profile mode and also starts up all required external systems as devservices, like the PostgreSQL database, Mailpit smtp dev server, Keycloak for authentication.
+
 * (Optional) Build application: `mvn clean package`
-* Run application with `local` profile:
-** With Maven, use https://quarkus.io/guides/maven-tooling#development-mode[Quarkus Development Mode]: `mvn compile quarkus:dev -Dquarkus.profile=local`
-+
-TIP: You can now change classes, configurations and other resources on the fly and Quarkus will automatically reload on the next call.
-+
 
-** In IntelliJ start via run configuration:
-+
-image::src/asciidoctor/images/intellij-run-configuration-dev.png[]
-+
-IMPORTANT: Change the `dev` profile in the image with `local`
-+
-TIP: This makes it even possible to run the application in debug mode.
+TIP: You can now change classes, configurations and other resources on the fly and Quarkus will automatically reload on the next call.
 
 === Run HTTP requests to test registration
 
@@ -86,16 +79,4 @@ Native, Docker will be used.
 
 == Deployment
 
-TBD
-
-=== JUG DA
-
-In progress
-
- $ TENANT=jugda sls deploy
-
-=== Cyberland
-
-In progress
-
- $ TENANT=cyberland sls deploy
+_t.b.d._
