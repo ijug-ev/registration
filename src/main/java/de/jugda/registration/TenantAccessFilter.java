@@ -32,11 +32,8 @@ public class TenantAccessFilter implements ContainerRequestFilter {
             return; // not a tenant-scoped endpoint -> nothing to enforce
         }
 
-        // TODO extend for "public" pages, which don't require authentication,
-        //      but still need to be accessible by all tenants.
-
         // Pure allow/deny: is this tenant in the user's set of tenants?
-        if (!identity.getRoles().contains(tenant)) {
+        if (!identity.isAnonymous() && !identity.getRoles().contains(tenant)) {
             ctx.abortWith(Response.status(Response.Status.FORBIDDEN)
                 .entity("No access to tenant '" + tenant + "'")
                 .build());
