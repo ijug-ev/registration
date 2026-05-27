@@ -3,7 +3,7 @@
     <form method="post" onsubmit="document.getElementById('submit').disabled=true;">
         {#if form.waitlist}
             <h3>Warteliste</h3>
-            <p class="lead text-danger">{helptext.waitlist}</p>
+            <p class="lead text-danger">{helptext.registration.waitlist}</p>
         {#else}
             <h3>Anmeldung</h3>
             <p class="text-success">Noch {form.freeSeats} freie Plätze ({form.actualCount} bereits angemeldet).</p>
@@ -11,12 +11,12 @@
         <div class="mb-2">
             <label for="name" class="form-label">Name*</label>
             <input type="text" name="name" id="name" class="form-control {#if form.validationErrors.containsKey('name')}is-invalid{/if}" placeholder="Name" value="{form.name}"/>
-            <small class="form-text text-muted">{helptext.name}</small>
+            <small class="form-text text-muted">{helptext.registration.name}</small>
         </div>
         <div class="mb-2">
             <label for="email" class="form-label">E-Mail*</label>
             <input type="email" name="email" id="email" class="form-control {#if form.validationErrors.containsKey('email')}is-invalid{/if}" placeholder="E-Mail" value="{form.email}"/>
-            <small class="form-text text-muted">{helptext.email}</small>
+            <small class="form-text text-muted">{helptext.registration.email}</small>
         </div>
         {#if form.showPub}
         <div class="mb-2 form-check">
@@ -35,11 +35,11 @@
             <input type="checkbox" class="form-check-input required" name="videoRecording" id="videoRecording">
             <label class="form-check-label" for="videoRecording">
                 Mir ist bekannt, dass die Veranstaltung auf Video aufgezeichnet und veröffentlicht wird.*
-                <small class="d-block text-muted">{helptext.video}</small>
+                <small class="d-block text-muted">{helptext.registration.video}</small>
             </label>
         </div>
         {/if}
-        <p class="text-muted small">{helptext.disclaimer}</p>
+        <p class="text-muted small">{helptext.registration.disclaimer}</p>
         <div class="mb-2 form-check">
             <input type="checkbox" class="form-check-input required" name="privacy" id="privacy">
             <label class="form-check-label" for="privacy">

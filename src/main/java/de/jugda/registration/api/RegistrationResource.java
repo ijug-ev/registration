@@ -1,7 +1,7 @@
 package de.jugda.registration.api;
 
-import de.jugda.registration.Config;
 import de.jugda.registration.TenantContext;
+import de.jugda.registration.domain.Content;
 import de.jugda.registration.model.RegistrationForm;
 import de.jugda.registration.service.RegistrationService;
 import io.quarkus.qute.Template;
@@ -32,8 +32,6 @@ public class RegistrationResource {
     RegistrationService registrationService;
     @Inject
     Validator validator;
-    @Inject
-    Config config;
     @Inject
     Template closed;
     @Inject
@@ -79,7 +77,7 @@ public class RegistrationResource {
             form.setHideVideoRecording(hideVideoRecording);
             form.setHybrid(hybrid);
             form.setWaitlist(registrationCount >= limit);
-            response = registration.data("form", form).data("helptext", config.page().registration());
+            response = registration.data("form", form).data("helptext", Content.asMap());
         }
 
         return response;
@@ -97,7 +95,7 @@ public class RegistrationResource {
         } else {
             violations.forEach(cv ->
                 registrationForm.addValidationError(cv.getPropertyPath().toString(), cv.getMessage()));
-            return registration.data("form", registrationForm).data("helptext", config.page().registration());
+            return registration.data("form", registrationForm).data("helptext", Content.asMap());
         }
     }
 

@@ -1,7 +1,7 @@
 package de.jugda.registration.api;
 
-import de.jugda.registration.Config;
 import de.jugda.registration.TenantContext;
+import de.jugda.registration.domain.Content;
 import de.jugda.registration.model.EventDto;
 import de.jugda.registration.service.EventService;
 import io.quarkus.qute.Location;
@@ -26,8 +26,6 @@ public class WebinarResource {
     EventService eventService;
     @Inject
     LaunchMode launchMode;
-    @Inject
-    Config config;
     @Location("webinar/webinar")
     Template webinar;
     @Location("webinar/notAvailable")
@@ -49,7 +47,7 @@ public class WebinarResource {
         return webinar.data("event", event)
             .data("tenant", tenantCtx.getTenant())
             .data("eventData", event)
-            .data("helptext", config.page().webinar());
+            .data("helptext", Content.asMap());
     }
 
 }
