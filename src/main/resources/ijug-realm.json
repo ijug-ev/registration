@@ -1,0 +1,55 @@
+{
+  "realm": "ijug",
+  "enabled": true,
+  "clients": [
+    {
+      "clientId": "registration",
+      "enabled": true,
+      "secret": "secret",
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": true,
+      "redirectUris": ["*"],
+      "webOrigins": ["*"]
+    }
+  ],
+  "roles": {
+    "client": {
+      "registration": [
+        { "name": "jugda", "description": "JUG DA" },
+        { "name": "cyberland", "description": "CyberLand" }
+      ]
+    }
+  },
+  "users": [
+    {
+      "username": "alice",
+      "enabled": true,
+      "email": "alice@ijug.eu",
+      "emailVerified": true,
+      "firstName": "Alice",
+      "lastName": "Example",
+      "credentials": [
+        { "type": "password", "value": "alice", "temporary": false }
+      ],
+      "clientRoles": {
+        "registration": ["jugda", "cyberland"]
+      }
+    },
+    {
+      "username": "bob",
+      "enabled": true,
+      "email": "bob@ijug.eu",
+      "emailVerified": true,
+      "firstName": "Bob",
+      "lastName": "Example",
+      "credentials": [
+        { "type": "password", "value": "bob", "temporary": false }
+      ],
+      "clientRoles": {
+        "registration": ["jugda"]
+      }
+    }
+  ]
+}
