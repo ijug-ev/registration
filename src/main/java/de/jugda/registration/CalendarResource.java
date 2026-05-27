@@ -20,16 +20,13 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.TimeZone;
 
-/**
- * @author Niko Köbler, https://www.n-k.de, @dasniko
- */
-@Path("ical")
+@Path("registration/{tenant}/ical")
 public class CalendarResource {
 
     @Inject
     EventService eventService;
     @Inject
-    Config config;
+    TenantContext tenantCtx;
 
     @GET
     @Path("{eventId}")
@@ -46,27 +43,28 @@ public class CalendarResource {
         vEvent.setDateTimeStamp(new Date());
         vEvent.setDateStart(Date.from(event.getStart().atZone(ZoneId.of(event.getTimezone())).toInstant()));
         vEvent.setDateEnd(Date.from(event.getEnd().atZone(ZoneId.of(event.getTimezone())).toInstant()));
-        vEvent.setSummary(config.email().subjectPrefix() + ": " + event.getSummary());
+        vEvent.setSummary(tenantCtx.getTenant().getName() + ": " + event.getSummary());
         vEvent.setDescription(String.format("%s\n\n%s\n\n%s\n\nWeitere Infos: %s",
-            config.tenant().name(), event.getSummary(), event.getDescription(), event.getUrl()));
+            tenantCtx.getTenant().getName(), event.getSummary(), event.getDescription(), event.getUrl()));
         vEvent.setLocation(event.getLocation());
         vEvent.setUrl(event.getUrl());
 
         if (event.getLocation().equalsIgnoreCase("online") || event.getLocation().equalsIgnoreCase("virtuell")) {
-            String link = String.format("%s/webinar/%s", config.tenant().baseUrl(), eventId);
+            // TODO get baseUrl/origin from current request
+            String link = String.format("/webinar/%s/%s", tenantCtx.getTenantId(), eventId);
             vEvent.setLocation(link);
             vEvent.setUrl(link);
         }
 
         vEvent.setStatus(Status.confirmed());
         vEvent.setClassification(Classification.PUBLIC);
-        vEvent.setOrganizer(new Organizer(config.tenant().name(), ""));
+        vEvent.setOrganizer(new Organizer(tenantCtx.getTenant().getName(), ""));
 
         ical.addEvent(vEvent);
 
         return Response
             .ok(Biweekly.write(ical).go())
-            .header("Content-Disposition", "attachment; filename=\"jugda_" + eventId + ".ics\"")
+            .header("Content-Disposition", "attachment; filename=\"%s_%s.ics\"".formatted(tenantCtx.getTenantId(), eventId))
             .build();
     }
 }

@@ -20,10 +20,7 @@ import jakarta.ws.rs.core.MediaType;
 import java.util.Set;
 import java.util.UUID;
 
-/**
- * @author Niko Köbler, http://www.n-k.de, @dasniko
- */
-@Path("delete")
+@Path("registration/{tenant}/delete")
 @Produces(MediaType.TEXT_HTML)
 public class DeleteResource {
 

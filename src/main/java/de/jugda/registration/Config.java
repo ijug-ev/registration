@@ -1,6 +1,5 @@
 package de.jugda.registration;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.smallrye.config.ConfigMapping;
 
 /**
@@ -9,42 +8,7 @@ import io.smallrye.config.ConfigMapping;
 @ConfigMapping(prefix = "app")
 public interface Config {
 
-    TenantConfig tenant();
-
-    EmailConfig email();
-    EventsConfig events();
-
     PageConfig page();
-
-    interface EmailConfig {
-        String from();
-        String subjectPrefix();
-    }
-
-    interface EventsConfig {
-        String jsonUrl();
-        String dataBucket();
-        String dataKey();
-    }
-
-    interface TenantConfig {
-        @JsonProperty("id")
-        String id();
-        @JsonProperty("name")
-        String name();
-        @JsonProperty("baseUrl")
-        String baseUrl();
-        @JsonProperty("privacy")
-        String privacy();
-        @JsonProperty("imprint")
-        String imprint();
-        @JsonProperty("logo")
-        String logo();
-        @JsonProperty("website")
-        String website();
-        @JsonProperty("youtube")
-        String youtube();
-    }
 
     interface PageConfig {
         RegistrationPageConfig registration();

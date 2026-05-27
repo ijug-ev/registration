@@ -36,21 +36,21 @@ public class AdminResource {
     EventService eventService;
     @Inject
     EmailService emailService;
-    @Inject
-    Config config;
     @Location("admin/overview")
     Template overview;
     @Location("admin/list")
     Template list;
 
     @Inject
-    TenantContext tenant; // TODO
+    TenantContext tenantCtx;
 
     @GET
     public TemplateInstance getAllEvents() {
         Map<String, Integer> events = listService.allEvents();
 
-        return overview.data("tenant", config.tenant()).data("events", events);
+        return overview
+            .data("tenant", tenantCtx.getTenant())
+            .data("events", events);
     }
 
     @GET
@@ -62,7 +62,7 @@ public class AdminResource {
         return list.data("eventId", eventId)
             .data("event", event)
             .data("eventData", event)
-            .data("tenant", config.tenant())
+            .data("tenant", tenantCtx.getTenant())
             .data("registrations", registrations);
     }
 
@@ -135,6 +135,5 @@ Dein {{tenant.name}} Orga-Team""";
 
         return Response.noContent().build();
     }
-
 
 }

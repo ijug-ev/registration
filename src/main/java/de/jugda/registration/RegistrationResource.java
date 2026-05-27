@@ -22,10 +22,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Set;
 
-/**
- * @author Niko Köbler, http://www.n-k.de, @dasniko
- */
-@Path("registration")
+@Path("registration/{tenant}")
 @Produces(MediaType.TEXT_HTML)
 public class RegistrationResource {
 
@@ -43,6 +40,9 @@ public class RegistrationResource {
     Template registration;
     @Inject
     Template thanks;
+
+    @Inject
+    TenantContext tenantCtx;
 
     @GET
     public TemplateInstance getForm(@QueryParam("eventId") String eventId,
@@ -89,7 +89,9 @@ public class RegistrationResource {
         Set<ConstraintViolation<RegistrationForm>> violations = validator.validate(registrationForm);
         if (violations.isEmpty()) {
             RegistrationForm registrationSaved = registrationService.handleRegistration(registrationForm);
-            return thanks.data("tenant", config.tenant()).data("reg", registrationSaved);
+            return thanks
+                .data("tenant", tenantCtx.getTenant())
+                .data("reg", registrationSaved);
         } else {
             violations.forEach(cv ->
                 registrationForm.addValidationError(cv.getPropertyPath().toString(), cv.getMessage()));

@@ -15,12 +15,8 @@ import jakarta.ws.rs.core.MediaType;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Map;
 
-/**
- * @author Niko Köbler, https://www.n-k.de, @dasniko
- */
-@Path("webinar")
+@Path("webinar/{tenant}")
 @Produces(MediaType.TEXT_HTML)
 public class WebinarResource {
 
@@ -35,18 +31,21 @@ public class WebinarResource {
     @Location("webinar/notAvailable")
     Template webinarNotAvailable;
 
+    @Inject
+    TenantContext tenantCtx;
+
     @GET
     @Path("{eventId}")
     public TemplateInstance getWebinar(@PathParam("eventId") String eventId) {
         String today = LocalDate.now().format(DateTimeFormatter.ISO_DATE);
         if (!launchMode.isDevOrTest() && !eventId.equals(today)) {
-            return webinarNotAvailable.data("tenant", config.tenant());
+            return webinarNotAvailable.data("tenant", tenantCtx.getTenant());
         }
 
         EventDto event = eventService.getEvent(eventId);
 
         return webinar.data("event", event)
-            .data("tenant", config.tenant())
+            .data("tenant", tenantCtx.getTenant())
             .data("eventData", event)
             .data("helptext", config.page().webinar());
     }

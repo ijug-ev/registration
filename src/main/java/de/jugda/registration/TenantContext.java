@@ -1,5 +1,6 @@
 package de.jugda.registration;
 
+import de.jugda.registration.domain.Tenant;
 import jakarta.enterprise.context.RequestScoped;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,4 +14,12 @@ import lombok.Setter;
 @Getter @Setter
 public class TenantContext {
     private String tenantId;
+    private Tenant tenant;
+
+    public Tenant getTenant() {
+        if (tenant == null) {
+            tenant = Tenant.findById(tenantId);
+        }
+        return tenant;
+    }
 }
