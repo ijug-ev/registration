@@ -1,0 +1,31 @@
+package de.jugda.registration.domain;
+
+import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+import org.hibernate.annotations.TenantId;
+
+@Entity
+@Getter
+@Setter
+@ToString
+public class Tenant extends PanacheEntityBase {
+    @Id
+    @TenantId
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
+    private String name;
+    private String website;
+    private String privacy;
+    private String imprint;
+    private String logo;
+    @Column(name = "reply_to")
+    private String replyTo;
+    private String events;
+}

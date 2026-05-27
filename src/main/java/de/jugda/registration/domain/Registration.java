@@ -12,12 +12,13 @@ import org.hibernate.annotations.TenantId;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.UUID;
 
 @Entity
 public class Registration extends PanacheEntityBase {
     @Id
     @GeneratedValue
-    private String id;
+    private UUID id;
     @TenantId
     @Column(name = "tenant")
     private String tenant;
@@ -33,11 +34,11 @@ public class Registration extends PanacheEntityBase {
     private Long ttl;
 
 
-    public String getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
@@ -150,7 +151,7 @@ public class Registration extends PanacheEntityBase {
 
     public RegistrationDto toDto() {
         RegistrationDto dto = new RegistrationDto();
-        dto.setId(this.id);
+        dto.setId(this.id.toString());
         dto.setName(this.name);
         dto.setEmail(this.email);
         dto.setEventId(this.eventId);

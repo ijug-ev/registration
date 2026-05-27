@@ -7,6 +7,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author Niko Köbler, http://www.n-k.de, @dasniko
@@ -24,7 +25,7 @@ public class DeleteService {
         return deleteFromUri(registration.getId());
     }
 
-    public String deleteFromUri(String id) {
+    public String deleteFromUri(UUID id) {
         String name = "";
         try {
             Registration registration = registrationDao.delete(id);
@@ -38,7 +39,7 @@ public class DeleteService {
         return name;
     }
 
-    public void delete(String id) {
+    public void delete(UUID id) {
         registrationDao.delete(id);
     }
 

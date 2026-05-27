@@ -54,7 +54,7 @@ public class RegistrationService {
         } while (savedRegistration == null && counter.intValue() < 3);
 
         if (savedRegistration != null) {
-            model.setId(savedRegistration.getId());
+            model.setId(savedRegistration.getId().toString());
             emailService.sendRegistrationConfirmation(savedRegistration.toDto());
         }
 

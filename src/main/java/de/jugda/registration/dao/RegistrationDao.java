@@ -11,6 +11,7 @@ import jakarta.persistence.criteria.Root;
 import jakarta.transaction.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author Niko Köbler, http://www.n-k.de, @dasniko
@@ -72,7 +73,7 @@ public class RegistrationDao {
     }
 
     @Transactional
-    public Registration delete(String id) {
+    public Registration delete(UUID id) {
         Registration registration = em.find(Registration.class, id);
         em.remove(registration);
 

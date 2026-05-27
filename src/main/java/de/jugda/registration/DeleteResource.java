@@ -18,6 +18,7 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * @author Niko Köbler, http://www.n-k.de, @dasniko
@@ -42,7 +43,7 @@ public class DeleteResource {
             form.setEventId(eventId);
             return delete.data(form);
         } else {
-            String name = deleteService.deleteFromUri(id);
+            String name = deleteService.deleteFromUri(UUID.fromString(id));
             return delete_thanks.data("name", name);
         }
     }
@@ -63,7 +64,7 @@ public class DeleteResource {
 
     @DELETE
     public void deleteById(@QueryParam("id") String id) {
-        deleteService.delete(id);
+        deleteService.delete(UUID.fromString(id));
     }
 
 }
