@@ -17,8 +17,10 @@ import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriInfo;
 
 import java.util.Collection;
 import java.util.List;
@@ -29,7 +31,7 @@ import java.util.stream.Collectors;
 @Path("admin/{tenant}/events")
 @Produces(MediaType.TEXT_HTML)
 @Authenticated
-public class AdminResource {
+public class AdminEventsResource {
 
     @Inject
     ListService listService;
@@ -44,11 +46,12 @@ public class AdminResource {
 
     @Inject
     TenantContext tenantCtx;
+    @Context
+    UriInfo uriInfo;
 
     @GET
     public TemplateInstance getAllEvents() {
         Map<String, Integer> events = listService.allEvents();
-
         return overview
             .data("tenant", tenantCtx.getTenant())
             .data("events", events);
@@ -65,6 +68,7 @@ public class AdminResource {
             .data("event", event)
             .data("eventData", eventData)
             .data("tenant", tenantCtx.getTenant())
+            .data("baseUrl", uriInfo.getBaseUri())
             .data("registrations", registrations);
     }
 
@@ -87,7 +91,6 @@ public class AdminResource {
     @Path("{eventId}/message")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response sendMessage(@PathParam("eventId") String eventId, Map<String, Object> data) {
-        String templateName = "custom";
         String subject = (String) data.get("subject");
         String message = (String) data.get("message");
 
@@ -103,36 +106,7 @@ public class AdminResource {
             .collect(Collectors.groupingBy(x -> index.getAndIncrement() / 50)).values();
 
         if (!chunkedRegistrations.isEmpty()) {
-            emailService.sendBulkEmail(chunkedRegistrations, templateName, subject, message);
-        }
-
-        return Response.noContent().build();
-    }
-
-    @PUT
-    @Path("{eventId}/messageToAll")
-    public Response sendMessageToAll(@PathParam("eventId") String eventId) {
-        String templateName = "custom";
-        String subject = "Link zum Online-Vortrag der {{tenant.name}} heute Abend";
-        String message = """
-Hallo {{name}}!
-
-Du hast Dich für unseren heutigen Online-Vortrag angemeldet. Den Link zur Einwahl und weitere Informationen findest Du hier:
-
-{{tenant.baseUrl}}/webinar/{{eventId}}
-
-Bis heute Abend, wir freuen uns auf Dein Kommen. Im Anschluss an den Vortrag kannst Du übrigens gern noch bei unserem virtuellen Stammtisch mitplaudern oder einfach nur zuhören.
-
-Viele Grüße
-Dein {{tenant.name}} Orga-Team""";
-
-
-        AtomicInteger index = new AtomicInteger(0);
-        Collection<List<RegistrationDto>> chunkedRegistrations = listService.singleEventRegistrations(eventId).stream()
-            .collect(Collectors.groupingBy(x -> index.getAndIncrement() / 50)).values();
-
-        if (!chunkedRegistrations.isEmpty()) {
-            emailService.sendBulkEmail(chunkedRegistrations, templateName, subject, message);
+            emailService.sendBulkEmail(chunkedRegistrations, subject, message);
         }
 
         return Response.noContent().build();

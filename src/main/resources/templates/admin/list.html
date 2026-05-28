@@ -68,7 +68,7 @@
             <form onsubmit="return sendMail()">
                 <div class="mb-2">
                     <label for="subject" class="form-label">Betreff</label>
-                    <input type="text" class="form-control" id="subject" value="Link zum Online-Vortrag der {{tenant.name}} heute Abend">
+                    <input type="text" class="form-control" id="subject" value="Link zum Online-Vortrag der {tenant.name} heute Abend">
                 </div>
                 <div class="mb-2">
                     <label for="message" class="form-label">Nachricht</label>
@@ -76,12 +76,12 @@
 
 Du hast Dich für unseren heutigen Online-Vortrag angemeldet. Den Link zur Einwahl und weitere Informationen findest Du hier:
 
-{{tenant.baseUrl}}/webinar/{{eventId}}
+{baseUrl}webinar/{tenant.id}/{eventId}
 
 Bis heute Abend, wir freuen uns auf Dein Kommen. Im Anschluss an den Vortrag kannst Du übrigens gern noch bei unserem virtuellen Stammtisch mitplaudern oder einfach nur zuhören.
 
 Viele Grüße
-Dein {{tenant.name}} Orga-Team</textarea>
+Dein {tenant.name} Orga-Team</textarea>
                 </div>
                 <button type="submit" class="btn btn-info">Senden</button>
             </form>
@@ -91,7 +91,7 @@ Dein {{tenant.name}} Orga-Team</textarea>
             <div class="mb-2">
                 <label for="names" class="form-label">Namen</label>
                 <textarea id="names" class="form-control" rows="8">{#for reg in registrations}{reg.name}
-                    {/for}</textarea>
+{/for}</textarea>
             </div>
         </div>
         <div class="collapse mt-3 mb-3" id="collapseEventData">
@@ -115,8 +115,9 @@ Dein {{tenant.name}} Orga-Team</textarea>
         if (confirm('Delete registration of ' + name + '?')) {
             console.log('deleting registration', id);
             $.ajax({
-                url: '/delete?id=' + id,
-                type: 'DELETE'
+                url: '/registration/{tenant.id}/delete?id=' + id,
+                type: 'DELETE',
+                cookies: true,
             }).done(function () {
                 $('#' + id).remove();
             });
@@ -131,6 +132,7 @@ Dein {{tenant.name}} Orga-Team</textarea>
             type: 'PUT',
             contentType: 'application/json',
             data: JSON.stringify(data),
+            cookies: true,
         }).done(() => {
             alert('Event-Daten gespeichert.');
         });
@@ -154,7 +156,7 @@ Dein {{tenant.name}} Orga-Team</textarea>
     function sendMail() {
         const data = {
             subject: $('#subject').val(),
-            message: $('#message').val(),
+            message: $('#message').val().replace(/\n/g, '<br>'),
             registrationIds: selectedRegistrations,
         };
         $.ajax({
@@ -162,6 +164,7 @@ Dein {{tenant.name}} Orga-Team</textarea>
             type: 'PUT',
             contentType: 'application/json',
             data: JSON.stringify(data),
+            cookies: true,
         }).done(() => {
             alert('Nachricht an ' + selectedRegistrations.length + ' Teilnehmer gesendet.');
         });

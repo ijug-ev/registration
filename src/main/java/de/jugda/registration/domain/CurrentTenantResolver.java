@@ -1,4 +1,4 @@
-package de.jugda.registration.dao;
+package de.jugda.registration.domain;
 
 import de.jugda.registration.TenantContext;
 import io.quarkus.hibernate.orm.PersistenceUnitExtension;

@@ -67,20 +67,21 @@ public class EmailService {
         sendMail(mail);
     }
 
-    public void sendBulkEmail(Collection<List<RegistrationDto>> chunkedRegistrations, String templateName, String subject, String body) {
-        // TODO what about templateName?
+    public void sendBulkEmail(Collection<List<RegistrationDto>> chunkedRegistrations, String subject, String body) {
+        subject = sanitize(subject);
+        body = sanitize(body);
+
+        String subjectRendered = Qute.fmt(subject).data("tenant", tenantCtx.getTenant()).render();
         Qute.Fmt messageTemplate = Qute.fmt(body)
             .data("tenant", tenantCtx.getTenant());
 
         chunkedRegistrations.stream().flatMap(Collection::stream).forEach(registration -> {
             String emailMessage = messageTemplate
                 .data("name", registration.getName())
-                .data("eventId", registration.eventId).render();
-            Mail mail = Mail.withHtml(
-                registration.email,
-                Qute.fmt(subject).data("name", registration.name).render(),
-                emailMessage
-            );
+                .data("eventId", registration.eventId)
+                .data("baseUrl", uriInfo.getBaseUri())
+                .render();
+            Mail mail = Mail.withHtml(registration.email, subjectRendered, emailMessage);
             sendMail(mail);
         });
     }
@@ -88,6 +89,10 @@ public class EmailService {
     private void sendMail(Mail mail) {
         mail.setReplyTo(tenantCtx.getTenant().getReplyTo());
         mailer.send(mail);
+    }
+
+    private String sanitize(String s) {
+        return s.replace("{{", "{").replace("}}", "}");
     }
 
 }
