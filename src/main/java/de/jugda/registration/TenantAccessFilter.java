@@ -33,7 +33,7 @@ public class TenantAccessFilter implements ContainerRequestFilter {
         }
 
         // Pure allow/deny: is this tenant in the user's set of tenants?
-        if (!identity.isAnonymous() && !identity.getRoles().contains(tenant)) {
+        if (!identity.isAnonymous() && !identity.hasRole(tenant)) {
             ctx.abortWith(Response.status(Response.Status.FORBIDDEN)
                 .entity("No access to tenant '" + tenant + "'")
                 .build());
