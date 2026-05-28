@@ -4,6 +4,6 @@ create table event_data
     event_id varchar(255) not null,
     key      varchar(255) not null,
     value    text         not null,
-    constraint content_pk
+    constraint event_data_pk
         primary key (tenant, event_id, key)
 );
