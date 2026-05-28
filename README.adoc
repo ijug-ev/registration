@@ -1,13 +1,13 @@
 = JUG Registration App
 :icons: font
 
-https://quarkus.io[Quarkus] based application.
+https://quarkus.io[Quarkus]-based application.
 
 == Usage / Integration Configuration
 
 Should be embedded in an `<iframe>` on the page.
 
-Root page is `/registration?eventId=...`.
+Root page is `/registration/{tenant}?eventId=...`.
 
 === Query Params
 
@@ -56,7 +56,7 @@ Root page is `/registration?eventId=...`.
 
 === Development with default `dev` profile
 
-For local development, simply power up the the Quarkus application,
+For local development, simply power up the Quarkus application
 
 * either by using the link:.run/ijug-registration.run.xml[provided IntelliJ run configuration]
 * or by executing https://quarkus.io/guides/maven-tooling#development-mode[Quarkus Development Mode] on the command line (terminal): `mvn compile quarkus:dev`
@@ -65,11 +65,15 @@ This starts Quarkus in `dev` profile mode and also starts up all required extern
 
 * (Optional) Build application: `mvn clean package`
 
-TIP: You can now change classes, configurations and other resources on the fly and Quarkus will automatically reload on the next call.
+TIP: You can now change classes, configurations and other resources on the fly, and Quarkus will automatically reload on the next call.
 
 === Run HTTP requests to test registration
 
-see link:misc/run-http-requests-manually.adoc[here]
+* Registration: http://localhost:8080/registration/test?eventId=2026-12-31&opensBeforeInMonths=8
+* Admin: http://localhost:8080/admin/test/events (User: alice/alice)
+* Mailpit: http://localhost:8080/q/dev-ui/quarkus-mailpit/mailpit-ui
+
+For runnint http requests manually, see link:misc/run-http-requests-manually.adoc[here].
 
 == Build
 
