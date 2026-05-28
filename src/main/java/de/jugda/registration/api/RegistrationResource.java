@@ -66,8 +66,8 @@ public class RegistrationResource {
             response = not_yet_open.data("eventId", eventId)
                 .data("startDate", startDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
         } else {
-            int registrationCount = registrationService.getRegistrationCount(eventId);
-            int freeSeats = limit - registrationCount;
+            long registrationCount = registrationService.getRegistrationCount(eventId);
+            long freeSeats = limit - registrationCount;
             RegistrationForm form = new RegistrationForm();
             form.setEventId(eventId);
             form.setFreeSeats(freeSeats);

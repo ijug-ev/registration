@@ -6,7 +6,12 @@ import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.annotations.TenantId;
 
 import java.time.LocalDate;
@@ -15,9 +20,12 @@ import java.time.ZoneOffset;
 import java.util.UUID;
 
 @Entity
+@Table(name = "registration")
+@Getter @Setter
+@ToString
 public class Registration extends PanacheEntityBase {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     @TenantId
     @Column(name = "tenant")
@@ -32,103 +40,6 @@ public class Registration extends PanacheEntityBase {
     private boolean remote;
     private LocalDateTime created;
     private Long ttl;
-
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public String getTenant() {
-        return tenant;
-    }
-
-    public void setTenant(String tenantId) {
-        this.tenant = tenantId;
-    }
-
-    public String getEventId() {
-        return eventId;
-    }
-
-    public void setEventId(String eventId) {
-        this.eventId = eventId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public boolean isPub() {
-        return pub;
-    }
-
-    public void setPub(boolean pub) {
-        this.pub = pub;
-    }
-
-    public boolean isWaitlist() {
-        return waitlist;
-    }
-
-    public void setWaitlist(boolean waitlist) {
-        this.waitlist = waitlist;
-    }
-
-    public boolean isPrivacy() {
-        return privacy;
-    }
-
-    public void setPrivacy(boolean privacy) {
-        this.privacy = privacy;
-    }
-
-    public boolean isVideoRecording() {
-        return videoRecording;
-    }
-
-    public void setVideoRecording(boolean videoRecording) {
-        this.videoRecording = videoRecording;
-    }
-
-    public boolean isRemote() {
-        return remote;
-    }
-
-    public void setRemote(boolean remote) {
-        this.remote = remote;
-    }
-
-    public LocalDateTime getCreated() {
-        return created;
-    }
-
-    public void setCreated(LocalDateTime created) {
-        this.created = created;
-    }
-
-    public Long getTtl() {
-        return ttl;
-    }
-
-    public void setTtl(Long ttl) {
-        this.ttl = ttl;
-    }
 
     public static Registration of(RegistrationForm form) {
         Registration registration = new Registration();
@@ -161,5 +72,15 @@ public class Registration extends PanacheEntityBase {
         dto.setCreated(this.created);
         dto.setTtl(this.ttl);
         return dto;
+    }
+
+    public void updateFrom(RegistrationForm form) {
+        this.name = form.getName().trim();
+        this.email = form.getEmail().trim().toLowerCase();
+        this.pub = onOrOff(form.getPub());
+        this.waitlist = form.isWaitlist();
+        this.privacy = onOrOff(form.getPrivacy());
+        this.videoRecording = onOrOff(form.getVideoRecording());
+        this.remote = onOrOff(form.getRemote());
     }
 }

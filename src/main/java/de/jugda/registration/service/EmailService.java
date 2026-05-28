@@ -10,7 +10,6 @@ import io.quarkus.qute.Qute;
 import io.quarkus.qute.Template;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.UriInfo;
 
 import java.util.Collection;
@@ -30,7 +29,7 @@ public class EmailService {
 
     @Inject
     TenantContext tenantCtx;
-    @Context
+    @Inject
     UriInfo uriInfo;
 
     void sendRegistrationConfirmation(RegistrationDto registration) {

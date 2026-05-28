@@ -36,11 +36,11 @@ public class RegistrationForm {
     public boolean waitlist;
 
     @FormParam("limit")
-    public int limit;
+    public long limit;
     @FormParam("freeSeats")
-    public int freeSeats;
+    public long freeSeats;
     @FormParam("actualCount")
-    public int actualCount;
+    public long actualCount;
     @FormParam("showPub")
     public boolean showPub;
     @FormParam("hideVideoRecording")
