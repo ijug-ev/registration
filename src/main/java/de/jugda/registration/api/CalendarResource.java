@@ -15,7 +15,9 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriInfo;
 
 import java.time.ZoneId;
 import java.util.Date;
@@ -28,6 +30,8 @@ public class CalendarResource {
     EventService eventService;
     @Inject
     TenantContext tenantCtx;
+    @Context
+    UriInfo uriInfo;
 
     @GET
     @Path("{eventId}")
@@ -51,8 +55,7 @@ public class CalendarResource {
         vEvent.setUrl(event.getUrl());
 
         if (event.getLocation().equalsIgnoreCase("online") || event.getLocation().equalsIgnoreCase("virtuell")) {
-            // TODO get baseUrl/origin from current request
-            String link = String.format("/webinar/%s/%s", tenantCtx.getTenantId(), eventId);
+            String link = String.format("%swebinar/%s/%s", uriInfo.getBaseUri(), tenantCtx.getTenantId(), eventId);
             vEvent.setLocation(link);
             vEvent.setUrl(link);
         }

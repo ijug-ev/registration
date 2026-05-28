@@ -77,7 +77,9 @@ public class RegistrationResource {
             form.setHideVideoRecording(hideVideoRecording);
             form.setHybrid(hybrid);
             form.setWaitlist(registrationCount >= limit);
-            response = registration.data("form", form).data("helptext", Content.asMap());
+            response = registration.data("form", form)
+                .data("tenant", tenantCtx.getTenantId())
+                .data("helptext", Content.asMap());
         }
 
         return response;
@@ -90,12 +92,14 @@ public class RegistrationResource {
         if (violations.isEmpty()) {
             RegistrationForm registrationSaved = registrationService.handleRegistration(registrationForm);
             return thanks
-                .data("tenant", tenantCtx.getTenant())
+                .data("tenant", tenantCtx.getTenantId())
                 .data("reg", registrationSaved);
         } else {
             violations.forEach(cv ->
                 registrationForm.addValidationError(cv.getPropertyPath().toString(), cv.getMessage()));
-            return registration.data("form", registrationForm).data("helptext", Content.asMap());
+            return registration.data("form", registrationForm)
+                .data("tenant", tenantCtx.getTenantId())
+                .data("helptext", Content.asMap());
         }
     }
 

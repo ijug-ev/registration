@@ -10,6 +10,8 @@ import io.quarkus.qute.Qute;
 import io.quarkus.qute.Template;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.UriInfo;
 
 import java.util.Collection;
 import java.util.List;
@@ -28,6 +30,8 @@ public class EmailService {
 
     @Inject
     TenantContext tenantCtx;
+    @Context
+    UriInfo uriInfo;
 
     void sendRegistrationConfirmation(RegistrationDto registration) {
         EventDto event = eventService.getEvent(registration.eventId);
@@ -38,6 +42,7 @@ public class EmailService {
             .data("tenant", tenantCtx.getTenant())
             .data("registration", registration)
             .data("event", event)
+            .data("baseUrl", uriInfo.getBaseUri())
             .render();
 
         sendEmail(registration, subject, mailBody);
@@ -52,6 +57,7 @@ public class EmailService {
             .data("tenant", tenantCtx.getTenant())
             .data("registration", registration)
             .data("event", event)
+            .data("baseUrl", uriInfo.getBaseUri())
             .render();
 
         sendEmail(registration, subject, mailBody);
