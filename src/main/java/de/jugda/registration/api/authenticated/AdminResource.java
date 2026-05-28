@@ -59,10 +59,11 @@ public class AdminResource {
     public TemplateInstance getEventList(@PathParam("eventId") String eventId) {
         List<RegistrationDto> registrations = listService.singleEventRegistrations(eventId);
         EventDto event = eventService.getEvent(eventId);
+        Map<String, String> eventData = eventService.getEventData(eventId);
 
         return list.data("eventId", eventId)
             .data("event", event)
-            .data("eventData", event)
+            .data("eventData", eventData)
             .data("tenant", tenantCtx.getTenant())
             .data("registrations", registrations);
     }
@@ -77,8 +78,8 @@ public class AdminResource {
     @PUT
     @Path("{eventId}/data")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response putEventData(@PathParam("eventId") String eventId, EventDto eventDto) {
-        eventService.putEventData(eventId, eventDto);
+    public Response putEventData(@PathParam("eventId") String eventId, Map<String, String> eventData) {
+        eventService.putEventData(eventId, eventData);
         return Response.noContent().build();
     }
 

@@ -17,6 +17,7 @@ import jakarta.ws.rs.core.MediaType;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 
 @Path("webinar/{tenant}")
 @Produces(MediaType.TEXT_HTML)
@@ -43,10 +44,11 @@ public class WebinarResource {
         }
 
         EventDto event = eventService.getEvent(eventId);
+        Map<String, String> eventData = eventService.getEventData(eventId);
 
         return webinar.data("event", event)
             .data("tenant", tenantCtx.getTenant())
-            .data("eventData", event)
+            .data("eventData", eventData)
             .data("helptext", Content.asMap());
     }
 

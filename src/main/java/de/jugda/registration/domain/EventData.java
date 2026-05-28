@@ -13,43 +13,48 @@ import org.hibernate.annotations.TenantId;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toMap;
 
 @Entity
-@Table(name = "content")
-@IdClass(Content.ContentId.class)
-public class Content extends PanacheEntityBase {
+@Table(name = "event_data")
+@IdClass(EventData.EventDataId.class)
+public class EventData extends PanacheEntityBase {
     @Id
     @TenantId
     @Column(nullable = false)
     public String tenant;
+    @Id
+    @Column(name = "event_id", nullable = false)
+    public String eventId;
     @Id
     @Column(name = "`key`", nullable = false)
     public String key;
     @Column(name = "`value`", nullable = false, columnDefinition = "text")
     public String value;
 
-    public static Map<String, String> asMap() {
-        return Content.<Content>streamAll()
-            .collect(Collectors.toMap(c -> c.key, c -> c.value));
+    public static Map<String, String> asMap(String eventId) {
+        return EventData.<EventData>stream("eventId", eventId)
+            .collect(toMap(c -> c.key, c -> c.value));
     }
 
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class ContentId implements Serializable {
+    public static class EventDataId implements Serializable {
         public String tenant;
+        public String eventId;
         public String key;
 
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
-            if (!(o instanceof ContentId that)) return false;
-            return Objects.equals(tenant, that.tenant) && Objects.equals(key, that.key);
+            if (!(o instanceof EventDataId that)) return false;
+            return Objects.equals(tenant, that.tenant) && Objects.equals(eventId, that.eventId) && Objects.equals(key, that.key);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(tenant, key);
+            return Objects.hash(tenant, eventId, key);
         }
     }
 }

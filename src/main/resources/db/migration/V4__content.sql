@@ -7,6 +7,12 @@ create table public.content
         primary key (tenant, key)
 );
 
+insert into public.content (tenant, key, value) values ('test', 'registration.name', 'Ohne Deinen Namen wissen wir nicht');
+insert into public.content (tenant, key, value) values ('test', 'registration.email', 'Deine E-Mail Adresse nutzen wir');
+insert into public.content (tenant, key, value) values ('test', 'registration.video', 'Sofern ich nicht möchte');
+insert into public.content (tenant, key, value) values ('test', 'registration.disclaimer', 'Mit Deiner Anmeldung bestätigst Du, dass Du die Hinweise an den Eingabefeldern gelesen und verstanden hast und Du damit einverstanden bist. Wir geben Deine persönlichen Daten aus dieser Anmeldung grundsätzlich nicht weiter und löschen diese ca. 1 Woche nach der Veranstaltung.');
+insert into public.content (tenant, key, value) values ('test', 'registration.waitlist', 'Für diese Veranstaltung sind zur Zeit alle verfügbaren Plätze belegt. Du kannst Dich aber auf der Warteliste eintragen. Wir informieren Dich dann');
+insert into public.content (tenant, key, value) values ('test', 'webinar.tools', 'Wir nutzen für Videokonferenzen und Online-Meetings die Plattform von Zoom Video Communications');
 insert into public.content (tenant, key, value) values ('jugda', 'registration.name', 'Ohne Deinen Namen wissen wir nicht');
 insert into public.content (tenant, key, value) values ('jugda', 'registration.email', 'Deine E-Mail Adresse nutzen wir');
 insert into public.content (tenant, key, value) values ('jugda', 'registration.video', 'Sofern ich nicht möchte');

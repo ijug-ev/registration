@@ -12,6 +12,8 @@ CREATE TABLE tenant
 );
 
 INSERT INTO tenant (id, name, website, privacy, imprint, logo, reply_to, events)
+VALUES ('test', 'Test-JUG', 'https://www.ijug.eu/test', 'https://www.ijug.eu/de/datenschutz/', 'https://www.ijug.eu/de/impressum/', 'https://cyberland.ijug.eu/assets/logo/logo-header.png', 'Test-JUG <jug@localhost>', 'http://localhost:8080/events.json');
+INSERT INTO tenant (id, name, website, privacy, imprint, logo, reply_to, events)
 VALUES ('jugda', 'JUG Darmstadt', 'https://www.jug-da.de', 'https://www.jug-da.de/datenschutz/', 'https://www.jug-da.de/impressum/', 'https://www.jug-da.de/images/jugda_logo_rund.png', 'JUG Darmstadt <info@jug-da.de>', 'https://www.jug-da.de/events.json');
 INSERT INTO tenant (id, name, website, privacy, imprint, logo, reply_to, events)
 VALUES ('cyberland', 'Cyberland', 'https://cyberland.ijug.eu', 'https://www.ijug.eu/de/datenschutz/', 'https://www.ijug.eu/de/impressum/', 'https://cyberland.ijug.eu/assets/logo/logo-header.png', 'Cyberland <cyberland@ijug.eu>', 'https://cyberland.ijug.eu/events.json');
