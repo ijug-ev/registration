@@ -2,6 +2,8 @@ package de.jugda.registration.api;
 
 import de.jugda.registration.TenantContext;
 import de.jugda.registration.domain.Content;
+import de.jugda.registration.model.RegistrationConfig;
+import de.jugda.registration.model.RegistrationDto;
 import de.jugda.registration.model.RegistrationForm;
 import de.jugda.registration.service.RegistrationService;
 import io.quarkus.qute.Template;
@@ -67,17 +69,19 @@ public class RegistrationResource {
                 .data("startDate", startDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
         } else {
             long registrationCount = registrationService.getRegistrationCount(eventId);
-            long freeSeats = limit - registrationCount;
             RegistrationForm form = new RegistrationForm();
             form.setEventId(eventId);
-            form.setFreeSeats(freeSeats);
-            form.setActualCount(registrationCount);
             form.setLimit(limit);
             form.setShowPub(showPub);
             form.setHideVideoRecording(hideVideoRecording);
             form.setHybrid(hybrid);
-            form.setWaitlist(registrationCount >= limit);
+            RegistrationConfig cfg = new RegistrationConfig(
+                limit, limit - registrationCount, registrationCount,
+                showPub, hideVideoRecording, hybrid,
+                registrationCount >= limit
+            );
             response = registration.data("form", form)
+                .data("cfg", cfg)
                 .data("tenant", tenantCtx.getTenantId())
                 .data("helptext", Content.asMap());
         }
@@ -90,14 +94,25 @@ public class RegistrationResource {
     public TemplateInstance postForm(@BeanParam RegistrationForm registrationForm) {
         Set<ConstraintViolation<RegistrationForm>> violations = validator.validate(registrationForm);
         if (violations.isEmpty()) {
-            RegistrationForm registrationSaved = registrationService.handleRegistration(registrationForm);
+            RegistrationDto registrationSaved = registrationService.handleRegistration(registrationForm, registrationForm.getLimit());
             return thanks
                 .data("tenant", tenantCtx.getTenantId())
                 .data("reg", registrationSaved);
         } else {
             violations.forEach(cv ->
                 registrationForm.addValidationError(cv.getPropertyPath().toString(), cv.getMessage()));
+            long registrationCount = registrationService.getRegistrationCount(registrationForm.getEventId());
+            RegistrationConfig cfg = new RegistrationConfig(
+                registrationForm.getLimit(),
+                registrationForm.getLimit() - registrationCount,
+                registrationCount,
+                registrationForm.isShowPub(),
+                registrationForm.isHideVideoRecording(),
+                registrationForm.isHybrid(),
+                registrationCount >= registrationForm.getLimit()
+            );
             return registration.data("form", registrationForm)
+                .data("cfg", cfg)
                 .data("tenant", tenantCtx.getTenantId())
                 .data("helptext", Content.asMap());
         }

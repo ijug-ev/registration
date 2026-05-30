@@ -32,15 +32,9 @@ public class RegistrationForm {
     public String pub;
     @FormParam("remote")
     public String remote;
-    @FormParam("waitlist")
-    public boolean waitlist;
 
     @FormParam("limit")
-    public long limit;
-    @FormParam("freeSeats")
-    public long freeSeats;
-    @FormParam("actualCount")
-    public long actualCount;
+    public int limit;
     @FormParam("showPub")
     public boolean showPub;
     @FormParam("hideVideoRecording")

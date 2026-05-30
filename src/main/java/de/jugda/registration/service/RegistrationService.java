@@ -1,6 +1,7 @@
 package de.jugda.registration.service;
 
 import de.jugda.registration.domain.Registration;
+import de.jugda.registration.model.RegistrationDto;
 import de.jugda.registration.model.RegistrationForm;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -17,19 +18,19 @@ public class RegistrationService {
     }
 
     @Transactional
-    public RegistrationForm handleRegistration(RegistrationForm form) {
+    public RegistrationDto handleRegistration(RegistrationForm form, int limit) {
         Registration registration = Registration.find("eventId = ?1 and email = ?2", form.getEventId(), form.getEmail()).firstResult();
         if (registration != null) {
             registration.updateFrom(form);
         } else {
-            registration = Registration.of(form);
+            boolean waitlist = getRegistrationCount(form.getEventId()) >= limit;
+            registration = Registration.of(form, waitlist);
         }
         registration.persist();
 
-        form.setId(registration.getId().toString());
-        emailService.sendRegistrationConfirmation(registration.toDto());
-
-        return form;
+        RegistrationDto dto = registration.toDto();
+        emailService.sendRegistrationConfirmation(dto);
+        return dto;
     }
 
 }

@@ -19,7 +19,7 @@ public class RegistrationMappingTest {
         form.setEmail("john@doe.com");
         form.setPub("on");
 
-        Registration reg = Registration.of(form);
+        Registration reg = Registration.of(form, false);
 
         assertEquals("2018-12-31", reg.getEventId());
         assertEquals("John Doe", reg.getName());

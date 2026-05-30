@@ -1,12 +1,12 @@
 {#include template.html}
 {#body}
     <form method="post" onsubmit="document.getElementById('submit').disabled=true;">
-        {#if form.waitlist}
+        {#if cfg.waitlist}
             <h3>Warteliste</h3>
             <p class="lead text-danger">{helptext["registration.waitlist"]}</p>
         {#else}
             <h3>Anmeldung</h3>
-            <p class="text-success">Noch {form.freeSeats} freie Plätze ({form.actualCount} bereits angemeldet).</p>
+            <p class="text-success">Noch {cfg.freeSeats} freie Plätze ({cfg.actualCount} bereits angemeldet).</p>
         {/if}
         <div class="mb-2">
             <label for="name" class="form-label">Name*</label>
@@ -18,19 +18,19 @@
             <input type="email" name="email" id="email" class="form-control {#if form.validationErrors.containsKey('email')}is-invalid{/if}" placeholder="E-Mail" value="{form.email}"/>
             <small class="form-text text-muted">{helptext["registration.email"]}</small>
         </div>
-        {#if form.showPub}
+        {#if cfg.showPub}
         <div class="mb-2 form-check">
             <input type="checkbox" class="form-check-input" name="pub" id="pub">
             <label class="form-check-label" for="pub">Ja, ich komme mit zum Stammtisch</label>
         </div>
         {/if}
-        {#if form.hybrid}
+        {#if cfg.hybrid}
             <div class="mb-2 form-check">
                 <input type="checkbox" class="form-check-input" name="remote" id="remote">
                 <label class="form-check-label" for="remote">Ich nehme nur Online/Remote teil.</label>
             </div>
         {/if}
-        {#if !form.hideVideoRecording}
+        {#if !cfg.hideVideoRecording}
         <div class="mb-2 form-check">
             <input type="checkbox" class="form-check-input required" name="videoRecording" id="videoRecording">
             <label class="form-check-label" for="videoRecording">
@@ -49,10 +49,7 @@
         <div class="small">* = Pflichtfeld</div>
         <button type="submit" id="submit" class="btn btn-primary" disabled="disabled">Anmelden</button>
         <input type="hidden" name="eventId" value="{form.eventId}"/>
-        <input type="hidden" name="freeSeats" value="{form.freeSeats}"/>
-        <input type="hidden" name="actualCount" value="{form.actualCount}"/>
         <input type="hidden" name="limit" value="{form.limit}"/>
-        <input type="hidden" name="waitlist" value="{form.waitlist}"/>
         <input type="hidden" name="showPub" value="{form.showPub}"/>
         <input type="hidden" name="hideVideoRecording" value="{form.hideVideoRecording}"/>
         <input type="hidden" name="hybrid" value="{form.hybrid}"/>

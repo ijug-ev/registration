@@ -41,7 +41,7 @@ public class Registration extends PanacheEntityBase {
     private LocalDateTime created;
     private Long ttl;
 
-    public static Registration of(RegistrationForm form) {
+    public static Registration of(RegistrationForm form, boolean waitlist) {
         Registration registration = new Registration();
         registration.setEventId(form.getEventId());
         registration.setName(form.getName().trim());
@@ -50,7 +50,7 @@ public class Registration extends PanacheEntityBase {
         registration.setVideoRecording(onOrOff(form.getVideoRecording()));
         registration.setPub(onOrOff(form.getPub()));
         registration.setRemote(onOrOff(form.getRemote()));
-        registration.setWaitlist(form.isWaitlist());
+        registration.setWaitlist(waitlist);
         registration.setTtl(LocalDate.parse(form.getEventId()).plusWeeks(1).atStartOfDay().toEpochSecond(ZoneOffset.UTC));
         registration.setCreated(LocalDateTime.now());
         return registration;
@@ -66,6 +66,7 @@ public class Registration extends PanacheEntityBase {
         dto.setName(this.name);
         dto.setEmail(this.email);
         dto.setEventId(this.eventId);
+        dto.setWaitlist(this.waitlist);
         dto.setPrivacy(this.privacy);
         dto.setVideoRecording(this.videoRecording);
         dto.setRemote(this.remote);
@@ -78,7 +79,6 @@ public class Registration extends PanacheEntityBase {
         this.name = form.getName().trim();
         this.email = form.getEmail().trim().toLowerCase();
         this.pub = onOrOff(form.getPub());
-        this.waitlist = form.isWaitlist();
         this.privacy = onOrOff(form.getPrivacy());
         this.videoRecording = onOrOff(form.getVideoRecording());
         this.remote = onOrOff(form.getRemote());
