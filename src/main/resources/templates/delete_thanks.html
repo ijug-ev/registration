@@ -1,6 +1,11 @@
 {#include template.html}
 {#body}
-    <h3>Vielen Dank, {name}</h3>
-    <p class="lead">Wir haben Deine Anmeldung storniert.</p>
+    {#if name}
+        <h3>Vielen Dank, {name}</h3>
+        <p class="lead">Wir haben Deine Anmeldung storniert.</p>
+    {#else}
+        <h3>Keine Anmeldung gefunden</h3>
+        <p class="lead">Zu diesem Link wurde keine aktive Anmeldung gefunden. Möglicherweise wurdest Du bereits abgemeldet.</p>
+    {/if}
 {/body}
 {/include}

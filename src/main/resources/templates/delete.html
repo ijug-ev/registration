@@ -2,7 +2,9 @@
 {#body}
     <form method="post" onsubmit="document.getElementById('submit').disabled=true;">
         <h3>Abmeldung</h3>
-        <div class="text-muted"></div>
+        {#if validationErrors.containsKey('global')}
+        <div class="alert alert-danger" role="alert">{validationErrors.global}</div>
+        {/if}
         <div class="mb-3">
             <label for="email" class="form-label">E-Mail*</label>
             <input type="email" name="email" id="email" class="form-control {#if validationErrors.containsKey('email')}is-invalid{/if}" placeholder="E-Mail"/>

@@ -17,6 +17,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -40,8 +41,8 @@ public class DeleteResource {
             form.setEventId(eventId);
             return delete.data(form);
         } else {
-            String name = deleteService.deleteFromUri(UUID.fromString(id));
-            return delete_thanks.data("name", name);
+            Optional<String> name = deleteService.deleteFromUri(UUID.fromString(id));
+            return delete_thanks.data("name", name.orElse(null));
         }
     }
 
@@ -50,8 +51,12 @@ public class DeleteResource {
     public TemplateInstance postDeleteForm(@BeanParam DeregistrationForm deregistrationForm) {
         Set<ConstraintViolation<DeregistrationForm>> violations = validator.validate(deregistrationForm);
         if (violations.isEmpty()) {
-            String name = deleteService.deleteFromUi(deregistrationForm);
-            return delete_thanks.data("name", name);
+            Optional<String> name = deleteService.deleteFromUi(deregistrationForm);
+            if (name.isPresent()) {
+                return delete_thanks.data("name", name.get());
+            }
+            deregistrationForm.addValidationError("global", "Keine Anmeldung mit diesen Daten gefunden.");
+            return delete.data(deregistrationForm);
         } else {
             violations.forEach(cv ->
                 deregistrationForm.addValidationError(cv.getPropertyPath().toString(), cv.getMessage()));

@@ -6,6 +6,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @ApplicationScoped
@@ -15,22 +16,28 @@ public class DeleteService {
     EmailService emailService;
 
     @Transactional
-    public String deleteFromUi(DeregistrationForm form) {
+    public Optional<String> deleteFromUi(DeregistrationForm form) {
         Registration registration = Registration
             .find("eventId = ?1 and email = ?2", form.getEventId(), form.getEmail().toLowerCase())
             .firstResult();
+        if (registration == null) {
+            return Optional.empty();
+        }
         return deleteFromUri(registration.getId());
     }
 
     @Transactional
-    public String deleteFromUri(UUID id) {
+    public Optional<String> deleteFromUri(UUID id) {
         Registration registration = Registration.findById(id);
+        if (registration == null) {
+            return Optional.empty();
+        }
         if (!registration.isWaitlist()) {
             processWaitlist(registration.getEventId());
         }
         String name = registration.getName();
         Registration.deleteById(id);
-        return name;
+        return Optional.of(name);
     }
 
     @Transactional
