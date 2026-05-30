@@ -39,9 +39,9 @@ public class DeleteService {
     }
 
     private void processWaitlist(String eventId) {
-        Registration.find("eventId = ?1 and waitlist = true", eventId)
-            .<Registration>stream()
-            .forEach(waiter -> {
+        Registration.find("eventId = ?1 and waitlist = true order by created asc", eventId)
+            .<Registration>firstResultOptional()
+            .ifPresent(waiter -> {
                 waiter.setWaitlist(false);
                 waiter.persist();
                 emailService.sendWaitlistToAttendeeConfirmation(waiter.toDto());
