@@ -38,7 +38,8 @@ public class RegistrationAndDeletionFunctionalTest extends FunctionalTestBase {
         given()
             .queryParam("eventId", EVENT_ID)
             .queryParam("deadline", EVENT_ID + "T23:59:59+02:00")
-            .get("/registration")
+            .queryParam("opensBeforeInMonths", 12)
+            .get("/registration/" + TENANT)
             .then()
             .statusCode(200)
             .body("html.body.form.h3", equalTo("Anmeldung"));
@@ -46,13 +47,6 @@ public class RegistrationAndDeletionFunctionalTest extends FunctionalTestBase {
 
     @Test
     void testCreateRegistrationAndDeleteViaDeleteRequest() {
-        given().contentType(ContentType.JSON)
-            .pathParam("eventId", EVENT_ID)
-            .body("{\"url\" : \"https://example.com/webinar\", \"summary\": \"Summary\", \"start\": \"2026-04-26T13:42:33\", \"end\":\"2026-04-26T15:48:45\"} ")
-            .put("/admin/events/{eventId}/data")
-            .then()
-            .statusCode(204);
-
         Participant participant = PARTICIPANTS.get(0);
         String link = given().contentType(ContentType.URLENC)
             .formParams(
@@ -60,7 +54,7 @@ public class RegistrationAndDeletionFunctionalTest extends FunctionalTestBase {
                 "name", participant.getName(),
                 "email", participant.getEmail()
             )
-            .post("/registration")
+            .post("/registration/" + TENANT)
             .then()
             .statusCode(200)
             .body("html.body.h3", equalTo("Vielen Dank, " + participant.getName()))
@@ -74,7 +68,7 @@ public class RegistrationAndDeletionFunctionalTest extends FunctionalTestBase {
 
         given()
             .queryParam("id", registrationId)
-            .delete("/delete")
+            .delete("/registration/" + TENANT + "/delete")
             .then()
             .statusCode(204);
     }
@@ -88,7 +82,7 @@ public class RegistrationAndDeletionFunctionalTest extends FunctionalTestBase {
                 "name", participant.getName(),
                 "email", participant.getEmail()
             )
-            .post("/registration")
+            .post("/registration/" + TENANT)
             .then()
             .statusCode(200)
             .body("html.body.h3", equalTo("Vielen Dank, " + participant.getName()))
@@ -102,7 +96,7 @@ public class RegistrationAndDeletionFunctionalTest extends FunctionalTestBase {
 
         given()
             .queryParam("id", registrationId)
-            .get("/delete")
+            .get("/registration/" + TENANT + "/delete")
             .then()
             .statusCode(200)
             .body("html.body.h3", equalTo("Vielen Dank, " + participant.getName()));
@@ -117,7 +111,7 @@ public class RegistrationAndDeletionFunctionalTest extends FunctionalTestBase {
                 "name", participant.getName(),
                 "email", participant.getEmail()
             )
-            .post("/registration")
+            .post("/registration/" + TENANT)
             .then()
             .statusCode(200)
             .body("html.body.h3", equalTo("Vielen Dank, " + participant.getName()));
@@ -128,7 +122,7 @@ public class RegistrationAndDeletionFunctionalTest extends FunctionalTestBase {
         // test if the deletion form returns
         given()
             .queryParam("eventId", EVENT_ID)
-            .get("/delete")
+            .get("/registration/" + TENANT + "/delete")
             .then()
             .statusCode(200)
             .body("html.body.form.h3", equalTo("Abmeldung"));
@@ -139,7 +133,7 @@ public class RegistrationAndDeletionFunctionalTest extends FunctionalTestBase {
                 "eventId", EVENT_ID,
                 "email", participant.getEmail()
             )
-            .post("/delete")
+            .post("/registration/" + TENANT + "/delete")
             .then()
             .statusCode(200)
             .body("html.body.h3", equalTo("Vielen Dank, " + participant.getName()));
