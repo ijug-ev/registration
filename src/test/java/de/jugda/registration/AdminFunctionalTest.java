@@ -23,7 +23,7 @@ public class AdminFunctionalTest extends FunctionalTestBase {
     static void createParticipants() {
         int port = ConfigProvider.getConfig().getValue("quarkus.http.test-port", Integer.class);
         PARTICIPANTS.forEach(participant -> given().port(port).contentType(ContentType.URLENC)
-            .formParams("eventId", EVENT_ID, "name", participant.getName(), "email", participant.getEmail())
+            .formParams("eventId", EVENT_ID, "name", participant.getName(), "email", participant.getEmail(), "limit", 60)
             .post("/registration/" + TENANT).then().statusCode(200));
     }
 
@@ -39,11 +39,12 @@ public class AdminFunctionalTest extends FunctionalTestBase {
 
     @Test
     void testEventRegistrations() {
-        given().pathParam("eventId", EVENT_ID)
+        given().accept(ContentType.HTML)
+            .pathParam("eventId", EVENT_ID)
             .get("/admin/" + TENANT + "/events/{eventId}")
             .then()
             .statusCode(200)
-            .body("html.body.div.div.h2", containsString("Anmeldungen für Event am"))
+            .body(containsString("Anmeldungen für Event am"))
             .body("html.body.div.table.tbody.tr.size()", is(PARTICIPANTS.size())) // all participants should be registered
         ;
     }
