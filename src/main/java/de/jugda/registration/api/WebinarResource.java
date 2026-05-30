@@ -2,7 +2,6 @@ package de.jugda.registration.api;
 
 import de.jugda.registration.TenantContext;
 import de.jugda.registration.domain.Content;
-import de.jugda.registration.model.EventDto;
 import de.jugda.registration.service.EventService;
 import io.quarkus.qute.Location;
 import io.quarkus.qute.Template;
@@ -43,13 +42,15 @@ public class WebinarResource {
             return webinarNotAvailable.data("tenant", tenantCtx.getTenant());
         }
 
-        EventDto event = eventService.getEvent(eventId);
-        Map<String, String> eventData = eventService.getEventData(eventId);
-
-        return webinar.data("event", event)
-            .data("tenant", tenantCtx.getTenant())
-            .data("eventData", eventData)
-            .data("helptext", Content.asMap());
+        return eventService.getEvent(eventId)
+            .map(event -> {
+                Map<String, String> eventData = eventService.getEventData(eventId);
+                return webinar.data("event", event)
+                    .data("tenant", tenantCtx.getTenant())
+                    .data("eventData", eventData)
+                    .data("helptext", Content.asMap());
+            })
+            .orElseGet(() -> webinarNotAvailable.data("tenant", tenantCtx.getTenant()));
     }
 
 }

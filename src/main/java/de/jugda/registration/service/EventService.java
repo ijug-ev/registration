@@ -16,6 +16,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static java.util.stream.Collectors.toMap;
 
@@ -42,11 +43,10 @@ public class EventService {
         }).await().indefinitely();
     }
 
-    public EventDto getEvent(String eventId) {
+    public Optional<EventDto> getEvent(String eventId) {
         return getAllEvents().stream()
             .filter(event -> event.uid.startsWith(eventId.replace("-", "")))
-            .findFirst()
-            .orElse(null);
+            .findFirst();
     }
 
     public Map<String, String> getEventData(String eventId) {

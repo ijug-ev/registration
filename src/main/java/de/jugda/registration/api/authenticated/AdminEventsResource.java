@@ -61,7 +61,7 @@ public class AdminEventsResource {
     @Path("{eventId}")
     public TemplateInstance getEventList(@PathParam("eventId") String eventId) {
         List<RegistrationDto> registrations = listService.singleEventRegistrations(eventId);
-        EventDto event = eventService.getEvent(eventId);
+        EventDto event = eventService.getEvent(eventId).orElse(null);
         Map<String, String> eventData = eventService.getEventData(eventId);
 
         return list.data("eventId", eventId)

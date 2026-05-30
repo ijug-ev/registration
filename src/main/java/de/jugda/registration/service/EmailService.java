@@ -33,9 +33,11 @@ public class EmailService {
     UriInfo uriInfo;
 
     void sendRegistrationConfirmation(RegistrationDto registration) {
-        EventDto event = eventService.getEvent(registration.eventId);
-        String subject = String.format("[%s] Anmeldebestätigung für \"%s\" am %s",
-            tenantCtx.getTenant().getName(), event.summary, event.startDate());
+        EventDto event = eventService.getEvent(registration.eventId).orElse(null);
+        String subject = event != null
+            ? String.format("[%s] Anmeldebestätigung für \"%s\" am %s",
+                tenantCtx.getTenant().getName(), event.summary, event.startDate())
+            : String.format("[%s] Anmeldebestätigung", tenantCtx.getTenant().getName());
 
         String mailBody = tplRegistration
             .data("tenant", tenantCtx.getTenant())
@@ -48,9 +50,11 @@ public class EmailService {
     }
 
     void sendWaitlistToAttendeeConfirmation(RegistrationDto registration) {
-        EventDto event = eventService.getEvent(registration.eventId);
-        String subject = String.format("[%s] Dein Wartelisten-Eintrag für \"%s\" am %s",
-            tenantCtx.getTenant().getName(), event.summary, event.startDate());
+        EventDto event = eventService.getEvent(registration.eventId).orElse(null);
+        String subject = event != null
+            ? String.format("[%s] Dein Wartelisten-Eintrag für \"%s\" am %s",
+                tenantCtx.getTenant().getName(), event.summary, event.startDate())
+            : String.format("[%s] Dein Wartelisten-Eintrag", tenantCtx.getTenant().getName());
 
         String mailBody = tplWaitlist2attendee
             .data("tenant", tenantCtx.getTenant())

@@ -37,7 +37,10 @@ public class CalendarResource {
     @Path("{eventId}")
     @Produces("text/calendar")
     public Response getICalEntry(@PathParam("eventId") String eventId) {
-        EventDto event = eventService.getEvent(eventId);
+        EventDto event = eventService.getEvent(eventId).orElse(null);
+        if (event == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
 
         ICalendar ical = new ICalendar();
         TimezoneAssignment tz = TimezoneAssignment.download(TimeZone.getTimeZone(event.getTimezone()), false);
