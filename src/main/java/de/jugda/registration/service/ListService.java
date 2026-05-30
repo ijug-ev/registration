@@ -3,6 +3,8 @@ package de.jugda.registration.service;
 import de.jugda.registration.domain.Registration;
 import de.jugda.registration.model.RegistrationDto;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -11,16 +13,20 @@ import java.util.Map;
 @ApplicationScoped
 public class ListService {
 
+    @Inject
+    EntityManager em;
+
     public List<RegistrationDto> singleEventRegistrations(String eventId) {
         return Registration.<Registration>stream("eventId", eventId).map(Registration::toDto).toList();
     }
 
     public Map<String, Integer> allEvents() {
-        List<RegistrationDto> registrations = Registration.<Registration>streamAll().map(Registration::toDto).toList();
-
         Map<String, Integer> events = new LinkedHashMap<>();
-        registrations.forEach(reg -> events.put(reg.getEventId(), events.getOrDefault(reg.getEventId(), 0) + 1));
-
+        em.createQuery(
+                "SELECT r.eventId, COUNT(r) FROM Registration r GROUP BY r.eventId ORDER BY r.eventId",
+                Object[].class)
+            .getResultList()
+            .forEach(row -> events.put((String) row[0], ((Long) row[1]).intValue()));
         return events;
     }
 
