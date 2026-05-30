@@ -42,7 +42,7 @@ jobs:
             ${{ runner.os }}-maven-
 
       - name: Maven build
-        run: ./mvnw -B -U clean package -DskipTests
+        run: ./mvnw -B -U clean package
 
       - name: Log in to the Container registry
         uses: docker/login-action@v4

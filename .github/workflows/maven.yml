@@ -35,4 +35,4 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-maven-
     - name: Maven build
-      run: ./mvnw -B -U package -DskipTests
+      run: ./mvnw -B -U package
