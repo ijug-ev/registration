@@ -3,6 +3,7 @@ package de.jugda.registration;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -20,7 +21,8 @@ public class AdminFunctionalTest extends FunctionalTestBase {
 
     @BeforeAll
     static void createParticipants() {
-        PARTICIPANTS.forEach(participant -> given().contentType(ContentType.URLENC)
+        int port = ConfigProvider.getConfig().getValue("quarkus.http.test-port", Integer.class);
+        PARTICIPANTS.forEach(participant -> given().port(port).contentType(ContentType.URLENC)
             .formParams("eventId", EVENT_ID, "name", participant.getName(), "email", participant.getEmail())
             .post("/registration/" + TENANT).then().statusCode(200));
     }
