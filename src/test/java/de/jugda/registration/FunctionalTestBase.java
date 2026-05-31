@@ -2,15 +2,15 @@ package de.jugda.registration;
 
 import lombok.Value;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-/**
- * @author Niko Köbler, https://www.n-k.de, @dasniko
- */
 public abstract class FunctionalTestBase {
 
     static final String TENANT = "test";
-    static final String EVENT_ID = "2026-12-31";
+    static final LocalDate TEST_EVENT_DATE = LocalDate.now().plusMonths(1);
+    static final String EVENT_ID = TEST_EVENT_DATE.format(DateTimeFormatter.ISO_LOCAL_DATE);
 
     static final List<Participant> PARTICIPANTS = List.of(
         new Participant("John Doe", "john.doe@example.com"),
