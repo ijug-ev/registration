@@ -2,20 +2,34 @@ package de.jugda.registration.domain;
 
 import de.jugda.registration.model.RegistrationDto;
 import de.jugda.registration.model.RegistrationForm;
+import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+import org.hibernate.annotations.TenantId;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Map;
+import java.util.UUID;
 
 @Entity
-public class Registration {
+@Table(name = "registration")
+@Getter @Setter
+@ToString
+public class Registration extends PanacheEntityBase {
     @Id
-    @GeneratedValue
-    private String id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+    @TenantId
+    @Column(name = "tenant")
+    private String tenant;
     private String eventId;
     private String name;
     private String email;
@@ -27,96 +41,7 @@ public class Registration {
     private LocalDateTime created;
     private Long ttl;
 
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getEventId() {
-        return eventId;
-    }
-
-    public void setEventId(String eventId) {
-        this.eventId = eventId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public boolean isPub() {
-        return pub;
-    }
-
-    public void setPub(boolean pub) {
-        this.pub = pub;
-    }
-
-    public boolean isWaitlist() {
-        return waitlist;
-    }
-
-    public void setWaitlist(boolean waitlist) {
-        this.waitlist = waitlist;
-    }
-
-    public boolean isPrivacy() {
-        return privacy;
-    }
-
-    public void setPrivacy(boolean privacy) {
-        this.privacy = privacy;
-    }
-
-    public boolean isVideoRecording() {
-        return videoRecording;
-    }
-
-    public void setVideoRecording(boolean videoRecording) {
-        this.videoRecording = videoRecording;
-    }
-
-    public boolean isRemote() {
-        return remote;
-    }
-
-    public void setRemote(boolean remote) {
-        this.remote = remote;
-    }
-
-    public LocalDateTime getCreated() {
-        return created;
-    }
-
-    public void setCreated(LocalDateTime created) {
-        this.created = created;
-    }
-
-    public Long getTtl() {
-        return ttl;
-    }
-
-    public void setTtl(Long ttl) {
-        this.ttl = ttl;
-    }
-
-    public static Registration of(RegistrationForm form) {
+    public static Registration of(RegistrationForm form, boolean waitlist) {
         Registration registration = new Registration();
         registration.setEventId(form.getEventId());
         registration.setName(form.getName().trim());
@@ -125,7 +50,7 @@ public class Registration {
         registration.setVideoRecording(onOrOff(form.getVideoRecording()));
         registration.setPub(onOrOff(form.getPub()));
         registration.setRemote(onOrOff(form.getRemote()));
-        registration.setWaitlist(form.isWaitlist());
+        registration.setWaitlist(waitlist);
         registration.setTtl(LocalDate.parse(form.getEventId()).plusWeeks(1).atStartOfDay().toEpochSecond(ZoneOffset.UTC));
         registration.setCreated(LocalDateTime.now());
         return registration;
@@ -137,15 +62,25 @@ public class Registration {
 
     public RegistrationDto toDto() {
         RegistrationDto dto = new RegistrationDto();
-        dto.setId(this.id);
+        dto.setId(this.id.toString());
         dto.setName(this.name);
         dto.setEmail(this.email);
         dto.setEventId(this.eventId);
+        dto.setWaitlist(this.waitlist);
         dto.setPrivacy(this.privacy);
         dto.setVideoRecording(this.videoRecording);
         dto.setRemote(this.remote);
         dto.setCreated(this.created);
         dto.setTtl(this.ttl);
         return dto;
+    }
+
+    public void updateFrom(RegistrationForm form) {
+        this.name = form.getName().trim();
+        this.email = form.getEmail().trim().toLowerCase();
+        this.pub = onOrOff(form.getPub());
+        this.privacy = onOrOff(form.getPrivacy());
+        this.videoRecording = onOrOff(form.getVideoRecording());
+        this.remote = onOrOff(form.getRemote());
     }
 }

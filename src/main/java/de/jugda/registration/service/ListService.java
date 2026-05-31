@@ -1,34 +1,32 @@
 package de.jugda.registration.service;
 
-import de.jugda.registration.dao.RegistrationDao;
 import de.jugda.registration.domain.Registration;
 import de.jugda.registration.model.RegistrationDto;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
 
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * @author Niko Köbler, http://www.n-k.de, @dasniko
- */
 @ApplicationScoped
 public class ListService {
 
     @Inject
-    RegistrationDao registrationDao;
+    EntityManager em;
 
     public List<RegistrationDto> singleEventRegistrations(String eventId) {
-        return registrationDao.findByEventId(eventId).stream().map(Registration::toDto).toList();
+        return Registration.<Registration>stream("eventId", eventId).map(Registration::toDto).toList();
     }
 
     public Map<String, Integer> allEvents() {
-        List<RegistrationDto> registrations = registrationDao.findAll().stream().map(Registration::toDto).toList();
-
         Map<String, Integer> events = new LinkedHashMap<>();
-        registrations.forEach(reg -> events.put(reg.getEventId(), events.getOrDefault(reg.getEventId(), 0) + 1));
-
+        em.createQuery(
+                "SELECT r.eventId, COUNT(r) FROM Registration r GROUP BY r.eventId ORDER BY r.eventId",
+                Object[].class)
+            .getResultList()
+            .forEach(row -> events.put((String) row[0], ((Long) row[1]).intValue()));
         return events;
     }
 

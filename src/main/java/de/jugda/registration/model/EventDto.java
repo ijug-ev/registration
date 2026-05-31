@@ -9,9 +9,6 @@ import lombok.Data;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-/**
- * @author Niko Köbler, https://www.n-k.de, @dasniko
- */
 @Data
 @TemplateData
 @RegisterForReflection
@@ -23,10 +20,8 @@ public class EventDto {
     public String title;
     public String description;
     public String speaker;
-    public String twitter;
     public String location;
     public String url;
-    public String webinarLink;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     public LocalDateTime start;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")

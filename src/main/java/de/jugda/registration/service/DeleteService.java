@@ -1,55 +1,58 @@
 package de.jugda.registration.service;
 
-import de.jugda.registration.dao.RegistrationDao;
 import de.jugda.registration.domain.Registration;
 import de.jugda.registration.model.DeregistrationForm;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
-import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
-/**
- * @author Niko Köbler, http://www.n-k.de, @dasniko
- */
 @ApplicationScoped
 public class DeleteService {
 
     @Inject
-    RegistrationDao registrationDao;
-    @Inject
     EmailService emailService;
 
-    public String deleteFromUi(DeregistrationForm form) {
-        Registration registration = registrationDao.findByEventIdAndEmail(form.getEventId(), form.getEmail().toLowerCase() );
+    @Transactional
+    public Optional<String> deleteFromUi(DeregistrationForm form) {
+        Registration registration = Registration
+            .find("eventId = ?1 and email = ?2", form.getEventId(), form.getEmail().toLowerCase())
+            .firstResult();
+        if (registration == null) {
+            return Optional.empty();
+        }
         return deleteFromUri(registration.getId());
     }
 
-    public String deleteFromUri(String id) {
-        String name = "";
-        try {
-            Registration registration = registrationDao.delete(id);
-            if (!registration.isWaitlist()) {
-                processWaitlist(registration.getEventId());
-            }
-            name = registration.getName();
-        } catch (Exception e) {
-            // intended
+    @Transactional
+    public Optional<String> deleteFromUri(UUID id) {
+        Registration registration = Registration.findById(id);
+        if (registration == null) {
+            return Optional.empty();
         }
-        return name;
+        if (!registration.isWaitlist()) {
+            processWaitlist(registration.getEventId());
+        }
+        String name = registration.getName();
+        Registration.deleteById(id);
+        return Optional.of(name);
     }
 
-    public void delete(String id) {
-        registrationDao.delete(id);
+    @Transactional
+    public void delete(UUID id) {
+        Registration.deleteById(id);
     }
 
     private void processWaitlist(String eventId) {
-        List<Registration> waitlist = registrationDao.findWaitlistByEventId(eventId);
-        if (!waitlist.isEmpty()) {
-            Registration waiter = waitlist.getFirst();
-            waiter.setWaitlist(false);
-            registrationDao.save(waiter);
-            emailService.sendWaitlistToAttendeeConfirmation(waiter.toDto());
-        }
+        Registration.find("eventId = ?1 and waitlist = true order by created asc", eventId)
+            .<Registration>firstResultOptional()
+            .ifPresent(waiter -> {
+                waiter.setWaitlist(false);
+                waiter.persist();
+                emailService.sendWaitlistToAttendeeConfirmation(waiter.toDto());
+            });
     }
 
 }

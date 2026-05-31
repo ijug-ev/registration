@@ -1,0 +1,77 @@
+package de.jugda.registration.api;
+
+import biweekly.Biweekly;
+import biweekly.ICalendar;
+import biweekly.component.VEvent;
+import biweekly.io.TimezoneAssignment;
+import biweekly.property.Classification;
+import biweekly.property.Organizer;
+import biweekly.property.Status;
+import de.jugda.registration.TenantContext;
+import de.jugda.registration.model.EventDto;
+import de.jugda.registration.service.EventService;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriInfo;
+
+import java.time.ZoneId;
+import java.util.Date;
+import java.util.TimeZone;
+
+@Path("registration/{tenant}/ical")
+public class CalendarResource {
+
+    @Inject
+    EventService eventService;
+    @Inject
+    TenantContext tenantCtx;
+    @Context
+    UriInfo uriInfo;
+
+    @GET
+    @Path("{eventId}")
+    @Produces("text/calendar")
+    public Response getICalEntry(@PathParam("eventId") String eventId) {
+        EventDto event = eventService.getEvent(eventId).orElse(null);
+        if (event == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        ICalendar ical = new ICalendar();
+        TimezoneAssignment tz = TimezoneAssignment.download(TimeZone.getTimeZone(event.getTimezone()), false);
+        ical.getTimezoneInfo().setDefaultTimezone(tz);
+
+        VEvent vEvent = new VEvent();
+        vEvent.setUid(event.getUid());
+        vEvent.setDateTimeStamp(new Date());
+        vEvent.setDateStart(Date.from(event.getStart().atZone(ZoneId.of(event.getTimezone())).toInstant()));
+        vEvent.setDateEnd(Date.from(event.getEnd().atZone(ZoneId.of(event.getTimezone())).toInstant()));
+        vEvent.setSummary(tenantCtx.getTenant().getName() + ": " + event.getSummary());
+        vEvent.setDescription(String.format("%s\n\n%s\n\n%s\n\nWeitere Infos: %s",
+            tenantCtx.getTenant().getName(), event.getSummary(), event.getDescription(), event.getUrl()));
+        vEvent.setLocation(event.getLocation());
+        vEvent.setUrl(event.getUrl());
+
+        if (event.getLocation().equalsIgnoreCase("online") || event.getLocation().equalsIgnoreCase("virtuell")) {
+            String link = String.format("%swebinar/%s/%s", uriInfo.getBaseUri(), tenantCtx.getTenantId(), eventId);
+            vEvent.setLocation(link);
+            vEvent.setUrl(link);
+        }
+
+        vEvent.setStatus(Status.confirmed());
+        vEvent.setClassification(Classification.PUBLIC);
+        vEvent.setOrganizer(new Organizer(tenantCtx.getTenant().getName(), ""));
+
+        ical.addEvent(vEvent);
+
+        return Response
+            .ok(Biweekly.write(ical).go())
+            .header("Content-Disposition", "attachment; filename=\"%s_%s.ics\"".formatted(tenantCtx.getTenantId(), eventId))
+            .build();
+    }
+}

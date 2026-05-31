@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -30,7 +31,35 @@ public class RegistrationAndDeletionFunctionalTest extends FunctionalTestBase {
     @Transactional
     void cleanup(){
         mailbox.clear();
-        em.createQuery("DELETE FROM Registration e").executeUpdate();
+        em.createNativeQuery("DELETE FROM registration").executeUpdate();
+    }
+
+    @Test
+    void testWaitlistIsEnforcedServerSide() {
+        // Fill the single available slot; include limit as the hidden field would in a real browser
+        given().contentType(ContentType.URLENC)
+            .formParams("eventId", EVENT_ID, "name", PARTICIPANTS.get(0).getName(), "email", PARTICIPANTS.get(0).getEmail(), "limit", 1)
+            .post("/registration/" + TENANT)
+            .then().statusCode(200)
+            .body(containsString("Wir haben Deine Anmeldung erhalten.</p>"));
+
+        // Second participant: limit comes from the form body (as it would via the hidden field),
+        // waitlist flag is computed server-side from count vs limit — not from any submitted field
+        given().contentType(ContentType.URLENC)
+            .formParams("eventId", EVENT_ID, "name", PARTICIPANTS.get(1).getName(), "email", PARTICIPANTS.get(1).getEmail(), "limit", 1)
+            .post("/registration/" + TENANT)
+            .then().statusCode(200)
+            .body(containsString("auf die Warteliste gesetzt"));
+
+        // GET with the same limit should now show the waitlist heading
+        given()
+            .queryParam("eventId", EVENT_ID)
+            .queryParam("limit", 1)
+            .queryParam("deadline", EVENT_ID + "T23:59:59+02:00")
+            .queryParam("opensBeforeInMonths", 12)
+            .get("/registration/" + TENANT)
+            .then().statusCode(200)
+            .body("html.body.form.h3", equalTo("Warteliste"));
     }
 
     @Test
@@ -38,7 +67,8 @@ public class RegistrationAndDeletionFunctionalTest extends FunctionalTestBase {
         given()
             .queryParam("eventId", EVENT_ID)
             .queryParam("deadline", EVENT_ID + "T23:59:59+02:00")
-            .get("/registration")
+            .queryParam("opensBeforeInMonths", 12)
+            .get("/registration/" + TENANT)
             .then()
             .statusCode(200)
             .body("html.body.form.h3", equalTo("Anmeldung"));
@@ -46,13 +76,6 @@ public class RegistrationAndDeletionFunctionalTest extends FunctionalTestBase {
 
     @Test
     void testCreateRegistrationAndDeleteViaDeleteRequest() {
-        given().contentType(ContentType.JSON)
-            .pathParam("eventId", EVENT_ID)
-            .body("{\"url\" : \"https://example.com/webinar\", \"summary\": \"Summary\", \"start\": \"2026-04-26T13:42:33\", \"end\":\"2026-04-26T15:48:45\"} ")
-            .put("/admin/events/{eventId}/data")
-            .then()
-            .statusCode(204);
-
         Participant participant = PARTICIPANTS.get(0);
         String link = given().contentType(ContentType.URLENC)
             .formParams(
@@ -60,7 +83,7 @@ public class RegistrationAndDeletionFunctionalTest extends FunctionalTestBase {
                 "name", participant.getName(),
                 "email", participant.getEmail()
             )
-            .post("/registration")
+            .post("/registration/" + TENANT)
             .then()
             .statusCode(200)
             .body("html.body.h3", equalTo("Vielen Dank, " + participant.getName()))
@@ -74,7 +97,7 @@ public class RegistrationAndDeletionFunctionalTest extends FunctionalTestBase {
 
         given()
             .queryParam("id", registrationId)
-            .delete("/delete")
+            .delete("/registration/" + TENANT + "/delete")
             .then()
             .statusCode(204);
     }
@@ -88,7 +111,7 @@ public class RegistrationAndDeletionFunctionalTest extends FunctionalTestBase {
                 "name", participant.getName(),
                 "email", participant.getEmail()
             )
-            .post("/registration")
+            .post("/registration/" + TENANT)
             .then()
             .statusCode(200)
             .body("html.body.h3", equalTo("Vielen Dank, " + participant.getName()))
@@ -102,7 +125,7 @@ public class RegistrationAndDeletionFunctionalTest extends FunctionalTestBase {
 
         given()
             .queryParam("id", registrationId)
-            .get("/delete")
+            .get("/registration/" + TENANT + "/delete")
             .then()
             .statusCode(200)
             .body("html.body.h3", equalTo("Vielen Dank, " + participant.getName()));
@@ -117,7 +140,7 @@ public class RegistrationAndDeletionFunctionalTest extends FunctionalTestBase {
                 "name", participant.getName(),
                 "email", participant.getEmail()
             )
-            .post("/registration")
+            .post("/registration/" + TENANT)
             .then()
             .statusCode(200)
             .body("html.body.h3", equalTo("Vielen Dank, " + participant.getName()));
@@ -128,7 +151,7 @@ public class RegistrationAndDeletionFunctionalTest extends FunctionalTestBase {
         // test if the deletion form returns
         given()
             .queryParam("eventId", EVENT_ID)
-            .get("/delete")
+            .get("/registration/" + TENANT + "/delete")
             .then()
             .statusCode(200)
             .body("html.body.form.h3", equalTo("Abmeldung"));
@@ -139,7 +162,7 @@ public class RegistrationAndDeletionFunctionalTest extends FunctionalTestBase {
                 "eventId", EVENT_ID,
                 "email", participant.getEmail()
             )
-            .post("/delete")
+            .post("/registration/" + TENANT + "/delete")
             .then()
             .statusCode(200)
             .body("html.body.h3", equalTo("Vielen Dank, " + participant.getName()));
