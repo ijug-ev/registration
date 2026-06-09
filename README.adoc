@@ -77,7 +77,7 @@ For runnint http requests manually, see link:misc/run-http-requests-manually.ado
 
 == Build
 
-There is a link:.github/workflows/docker.yml[GH action] to build and push a (multi-platform arm64/amd64) Docker image to `ghcr.io/CyberLandConf/registration:<version>`.
+There is a link:.github/workflows/docker.yml[GH action] to build and push a (multi-platform arm64/amd64) Docker image to `ghcr.io/cyberlandconf/registration:<version>`.
 
 This action runs either
 
@@ -86,4 +86,11 @@ This action runs either
 
 == Deployment
 
-_t.b.d._
+An example Docker Compose file is provided link:docker-compose.yml[here]:
+
+[source,yaml]
+----
+include::docker-compose.yml[]
+----
+
+TIP: The production app should be available directly under https://registration.ijug.eu
