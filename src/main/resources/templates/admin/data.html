@@ -1,0 +1,65 @@
+{#include template.html}
+{#body}
+<div class="container">
+    <div class="row">
+        {#include admin/menu.html/}
+        <div class="col">
+            <h2 class="fw-light my-3">JUG Daten</h2>
+            <form method="post" action="/admin/{tenant.id}/data">
+                <div class="mb-2 row">
+                    <label class="col-3 col-form-label">ID</label>
+                    <div class="col-9">
+                        <input type="text" class="form-control" value="{tenant.id}" readonly disabled>
+                    </div>
+                </div>
+                <div class="mb-2 row">
+                    <label for="name" class="col-3 col-form-label">Name</label>
+                    <div class="col-9">
+                        <input type="text" class="form-control" id="name" name="name" value="{tenant.name}">
+                    </div>
+                </div>
+                <div class="mb-2 row">
+                    <label for="website" class="col-3 col-form-label">Website</label>
+                    <div class="col-9">
+                        <input type="url" class="form-control" id="website" name="website" value="{tenant.website}">
+                    </div>
+                </div>
+                <div class="mb-2 row">
+                    <label for="privacy" class="col-3 col-form-label">Datenschutz-URL</label>
+                    <div class="col-9">
+                        <input type="url" class="form-control" id="privacy" name="privacy" value="{tenant.privacy}">
+                    </div>
+                </div>
+                <div class="mb-2 row">
+                    <label for="imprint" class="col-3 col-form-label">Impressum-URL</label>
+                    <div class="col-9">
+                        <input type="url" class="form-control" id="imprint" name="imprint" value="{tenant.imprint}">
+                    </div>
+                </div>
+                <div class="mb-2 row">
+                    <label for="logo" class="col-3 col-form-label">Logo-URL</label>
+                    <div class="col-9">
+                        <input type="url" class="form-control" id="logo" name="logo" value="{tenant.logo}">
+                    </div>
+                </div>
+                <div class="mb-2 row">
+                    <label for="replyTo" class="col-3 col-form-label">Reply-To</label>
+                    <div class="col-9">
+                        <input type="text" class="form-control" id="replyTo" name="replyTo" value="{tenant.replyTo}">
+                    </div>
+                </div>
+                <div class="mb-2 row">
+                    <label for="events" class="col-3 col-form-label">Events-URL</label>
+                    <div class="col-9">
+                        <input type="url" class="form-control" id="events" name="events" value="{tenant.events}">
+                    </div>
+                </div>
+                <div class="mb-3 mt-3">
+                    <button type="submit" class="btn btn-primary">Speichern</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{/body}
+{/include}
