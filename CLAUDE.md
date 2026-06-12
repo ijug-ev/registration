@@ -87,4 +87,4 @@ Flyway migrations in `src/main/resources/db/migration/`. Run automatically at st
 - Dev mode uses a local Keycloak DevService with `ijug-realm.json`
 
 ### Production Deployment
-Deployed via Docker Compose (`docker-compose.yml`). Image: `ghcr.io/cyberlandconf/registration:latest`. Built and pushed by GitHub Actions on pushes to `main` (tagged `latest`) or `v*` tags (tagged with version).
+Deployed via Docker Compose (`docker-compose.yml`). Image: `ghcr.io/ijug-ev/registration:latest`. Built and pushed by GitHub Actions on pushes to `main` (tagged `latest`) or `v*` tags (tagged with version).

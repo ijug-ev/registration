@@ -9,7 +9,7 @@ services:
     restart: always
 
   application:
-    image: ghcr.io/cyberlandconf/registration:latest
+    image: ghcr.io/ijug-ev/registration:latest
     depends_on:
       - database
     environment:
