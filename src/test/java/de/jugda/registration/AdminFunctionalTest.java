@@ -32,8 +32,8 @@ public class AdminFunctionalTest extends FunctionalTestBase {
         given().get("/admin/" + TENANT + "/events")
             .then()
             .statusCode(200)
-            .body("html.body.div.h2", equalTo("Event-Anmeldungen"))
-            .body("html.body.div.table.tbody.tr.size()", is(1)) // 1 Event
+            .body("html.body.div.div.div.h2", equalTo("Event-Anmeldungen"))
+            .body("html.body.div.div.div.table.tbody.tr.size()", is(1)) // 1 Event
         ;
     }
 
@@ -45,7 +45,7 @@ public class AdminFunctionalTest extends FunctionalTestBase {
             .then()
             .statusCode(200)
             .body(containsString("Anmeldungen für Event am"))
-            .body("html.body.div.table.tbody.tr.size()", is(PARTICIPANTS.size())) // all participants should be registered
+            .body("html.body.div.div.div.table.tbody.tr.size()", is(PARTICIPANTS.size())) // all participants should be registered
         ;
     }
 
