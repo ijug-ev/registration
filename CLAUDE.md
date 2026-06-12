@@ -66,18 +66,22 @@ Known tenants (seeded in `V3__tenant.sql`): `test`, `jugda`, `cyberland`.
 - **`EmailService`** — sends confirmation, waitlist-to-attendee, and bulk emails via Quarkus Mailer + Qute templates.
 - **`CleanupJob`** — scheduled job that purges expired registrations (based on `ttl` epoch seconds, set to 1 week after the event).
 - **`Content`** — tenant-scoped key/value texts stored in the `content` table; injected into templates via `Content.asMap()` as `helptext`.
+- **`InviteJob`** (package `eu.ijug.events.invitation`) — daily scheduled job (10:00) that sends announcement/invitation emails and Mastodon toots for upcoming events. Only runs for tenants with a row in the `invite_config` table (`InviteConfig` entity). Uses `EventService` by setting `TenantContext` per tenant iteration. Does **not** use Hibernate `@TenantId` so it can iterate all tenants without a discriminator filter.
 
 ### Data Model
 - `Registration` — one row per participant per event; `ttl` auto-expires ~1 week post-event.
 - `Tenant` — configuration per JUG: name, website, privacy/imprint URLs, logo, reply-to address, events JSON URL.
 - `EventData` — mutable per-event key/value metadata, editable by admins.
 - `Content` — tenant-scoped UI help texts (name field hint, email hint, video recording notice, etc.).
+- `InviteConfig` — opt-in config per tenant for the invite job: `mailTo` (newsletter recipient), `mastoUrl`, `mastoToken`. No `@TenantId` — not discriminator-filtered. Seeded manually; absence of a row disables the job for that tenant.
 
 ### Templates
 Qute HTML templates in `src/main/resources/templates/`. Mail templates are in `templates/mail/`. All templates share `template.html` as the base layout via Qute includes.
 
 ### Database Migrations
 Flyway migrations in `src/main/resources/db/migration/`. Run automatically at startup. Schema is managed solely via Flyway (`quarkus.hibernate-orm.schema-management.strategy=none`).
+
+Note: there is no `V5` in the main migrations — `V5__test_tenant_events_url.sql` exists only in `src/test/resources` and is test-only. Production runs V1–V4, then V6. Flyway handles version gaps without error.
 
 ### Authentication (OIDC / Keycloak)
 - Production Keycloak: `https://id.ijug.eu/realms/ijug`
