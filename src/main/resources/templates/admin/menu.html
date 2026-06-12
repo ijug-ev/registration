@@ -1,0 +1,35 @@
+<div class="col-auto d-flex flex-column flex-shrink-0 p-3 bg-body-tertiary" style="width: 280px;">
+    <div>
+        <img src="{tenant.logo}" style="max-height: 70px; max-width: calc(280px - 2rem);" alt="{tenant.name} Logo"/>
+        <br>
+        <span class="fs-4">{tenant.name}</span> </a>
+    </div>
+    <hr>
+    <ul class="nav nav-pills flex-column mb-auto">
+        <li class="nav-item">
+            <a href="./events" class="nav-link {#if activeNav == 'events'}active{#else}link-body-emphasis{/if}" {#if activeNav == 'events'}aria-current="page"{/if}>
+                <i class="bi bi-calendar-event me-1"></i>
+                Events / Registrierungen
+            </a>
+        </li>
+        <li>
+            <a href="./data" class="nav-link {#if activeNav == 'data'}active{#else}link-body-emphasis{/if}" {#if activeNav == 'data'}aria-current="page"{/if}>
+                <i class="bi bi-database me-1"></i>
+                JUG Data
+            </a>
+        </li>
+    </ul>
+    <hr>
+    <div class="dropdown">
+        <a href="#" class="d-flex align-items-center link-body-emphasis text-decoration-none dropdown-toggle"
+           data-bs-toggle="dropdown" aria-expanded="false">
+            <img src="{id.gravatarUrl}" alt="" width="32" height="32" class="rounded-circle me-2">
+            <strong>{id.getClaim('name')}</strong>
+        </a>
+        <ul class="dropdown-menu text-small shadow">
+            <li><a class="dropdown-item" href="#">Platzhalter...</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="/logout">Logout</a></li>
+        </ul>
+    </div>
+</div>

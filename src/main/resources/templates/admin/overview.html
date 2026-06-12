@@ -1,24 +1,28 @@
 {#include template.html}
 {#body}
 <div class="container">
-    {#include logoheader.html/}
-    <h2 class="fw-light my-3">Event-Anmeldungen</h2>
-    <table class="table table-striped">
-        <thead>
-        <tr>
-            <th>Event-ID</th>
-            <th>Anmeldungen</th>
-        </tr>
-        </thead>
-        <tbody>
-        {#for event in events}
-            <tr>
-                <td><a href="/admin/{tenant.id}/events/{event.key}">{event.key}</a></td>
-                <td>{event.value}</td>
-            </tr>
-        {/for}
-        </tbody>
-    </table>
+    <div class="row">
+        {#include admin/menu.html/}
+        <div class="col">
+            <h2 class="fw-light my-3">Event-Anmeldungen</h2>
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>Event-ID</th>
+                    <th>Anmeldungen</th>
+                </tr>
+                </thead>
+                <tbody>
+                {#for event in events}
+                    <tr>
+                        <td><a href="/admin/{tenant.id}/events/{event.key}">{event.key}</a></td>
+                        <td>{event.value}</td>
+                    </tr>
+                {/for}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 {/body}
 {/include}

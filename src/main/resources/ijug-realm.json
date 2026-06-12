@@ -11,6 +11,7 @@
       "directAccessGrantsEnabled": true,
       "standardFlowEnabled": true,
       "redirectUris": ["*"],
+      "baseUrl": "http://localhost:8080/admin/test",
       "webOrigins": ["*"]
     }
   ],

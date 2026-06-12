@@ -6,6 +6,7 @@ import de.jugda.registration.model.RegistrationDto;
 import de.jugda.registration.service.EmailService;
 import de.jugda.registration.service.EventService;
 import de.jugda.registration.service.ListService;
+import io.quarkus.oidc.IdToken;
 import io.quarkus.qute.Location;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
@@ -21,6 +22,7 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 
 import java.util.Collection;
 import java.util.List;
@@ -48,18 +50,23 @@ public class AdminEventsResource {
     TenantContext tenantCtx;
     @Context
     UriInfo uriInfo;
+    @Inject
+    @IdToken
+    JsonWebToken idToken;
 
     @GET
     public TemplateInstance getAllEvents() {
         Map<String, Integer> events = listService.allEvents();
         return overview
             .data("tenant", tenantCtx.getTenant())
+            .data("id", idToken)
+            .data("activeNav", "events")
             .data("events", events);
     }
 
     @GET
     @Path("{eventId}")
-    public TemplateInstance getEventList(@PathParam("eventId") String eventId) {
+    public TemplateInstance getEventRegistrations(@PathParam("eventId") String eventId) {
         List<RegistrationDto> registrations = listService.singleEventRegistrations(eventId);
         EventDto event = eventService.getEvent(eventId).orElse(null);
         Map<String, String> eventData = eventService.getEventData(eventId);
@@ -68,6 +75,8 @@ public class AdminEventsResource {
             .data("event", event)
             .data("eventData", eventData)
             .data("tenant", tenantCtx.getTenant())
+            .data("id", idToken)
+            .data("activeNav", "events")
             .data("baseUrl", uriInfo.getBaseUri())
             .data("registrations", registrations);
     }
