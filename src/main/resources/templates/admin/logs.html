@@ -1,0 +1,54 @@
+{#include template.html}
+{#body}
+<div class="container">
+    <div class="row">
+        {#include admin/menu.html/}
+        <div class="col" style="min-width:0">
+            <h2 class="fw-light my-3">Application Logs</h2>
+            <div class="mb-2 d-flex gap-3 align-items-center">
+                <label>Lines: <input id="lines" type="number" value="500" style="width:80px" class="form-control form-control-sm d-inline-block"></label>
+                <div class="form-check form-switch mb-0">
+                    <input class="form-check-input" type="checkbox" id="autoRefresh">
+                    <label class="form-check-label" for="autoRefresh">Auto-Refresh (3s)</label>
+                </div>
+                <button id="refreshBtn" class="btn btn-sm btn-outline-secondary">Refresh</button>
+            </div>
+            <pre id="log" class="overflow-auto p-3 rounded" style="background:#1e1e1e;color:#d4d4d4;height:80vh;">Loading...</pre>
+        </div>
+    </div>
+</div>
+
+<script>
+    const logEl = document.getElementById('log');
+    const linesInput = document.getElementById('lines');
+    const autoRefreshEl = document.getElementById('autoRefresh');
+    let timer = null;
+
+    async function fetchLogs() {
+        const lines = linesInput.value || 500;
+        const res = await fetch('/admin/{tenant.id}/logs/tail?lines=' + lines);
+        const text = await res.text();
+        const atBottom = logEl.scrollTop + logEl.clientHeight >= logEl.scrollHeight - 20;
+        logEl.innerHTML = text.split('\n').map(escapeAndColor).join('\n');
+        if (atBottom) logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function escapeAndColor(line) {
+        const esc = line.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+        if (esc.includes('ERROR')) return '<span style="color:#f48771">' + esc + '</span>';
+        if (esc.includes('WARN'))  return '<span style="color:#dcdcaa">' + esc + '</span>';
+        return esc;
+    }
+
+    function scheduleRefresh() {
+        clearInterval(timer);
+        if (autoRefreshEl.checked) timer = setInterval(fetchLogs, 3000);
+    }
+
+    document.getElementById('refreshBtn').addEventListener('click', fetchLogs);
+    autoRefreshEl.addEventListener('change', scheduleRefresh);
+
+    fetchLogs();
+</script>
+{/body}
+{/include}

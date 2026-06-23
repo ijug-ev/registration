@@ -1,4 +1,4 @@
-<div class="col-auto d-flex flex-column flex-shrink-0 p-3 bg-body-tertiary" style="width: 280px;">
+<div class="col-auto d-flex flex-column flex-shrink-0 p-3 bg-body-tertiary" style="width: 280px; height: 100vh;">
     <div>
         <img src="{tenant.logo}" style="max-height: 70px; max-width: calc(280px - 2rem);" alt="{tenant.name} Logo"/>
         <br>
@@ -16,6 +16,12 @@
             <a href="./data" class="nav-link {#if activeNav == 'data'}active{#else}link-body-emphasis{/if}" {#if activeNav == 'data'}aria-current="page"{/if}>
                 <i class="bi bi-database me-1"></i>
                 JUG Data
+            </a>
+        </li>
+        <li>
+            <a href="./logs" class="nav-link {#if activeNav == 'logs'}active{#else}link-body-emphasis{/if}" {#if activeNav == 'logs'}aria-current="page"{/if}>
+                <i class="bi bi-file-text me-1"></i>
+                Logs
             </a>
         </li>
     </ul>
