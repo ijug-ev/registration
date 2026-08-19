@@ -27,6 +27,8 @@ public class EventDto {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     public LocalDateTime end;
     public String timezone;
+    public boolean externalEvent;
+    public boolean hideRegistration;
 
     public String startDate() {
         return start.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
