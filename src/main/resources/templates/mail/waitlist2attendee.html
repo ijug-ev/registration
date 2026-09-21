@@ -1,9 +1,14 @@
 <h3>Hallo {registration.name}!</h3>
+{! See mail/registration.html: the event can be missing from the calendar feed, the mail still has to go out. !}
 <p>
     Herzlichen Glückwunsch!<br/>
+    {#if event}
     Wir konnten Dich für unsere Veranstaltung "{event.summary}" am {event.startDate} um {event.startTime} Uhr von der Warteliste auf die reguläre Teilnehmerliste setzen.
+    {#else}
+    Wir konnten Dich für unsere Veranstaltung am {registration.formattedEventDate} von der Warteliste auf die reguläre Teilnehmerliste setzen.
+    {/if}
 </p>
-{#include mail/ical.html/}
+{#if event}{#include mail/ical.html/}{/if}
 {#include mail/deregistration.html}
 {#id}{registration.id}{/id}
 {/include}
