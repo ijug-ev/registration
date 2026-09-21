@@ -58,7 +58,7 @@ public class CalendarResource {
         vEvent.setUrl(event.getUrl());
 
         if (event.getLocation().equalsIgnoreCase("online") || event.getLocation().equalsIgnoreCase("virtuell")) {
-            String link = String.format("%swebinar/%s/%s", uriInfo.getBaseUri(), tenantCtx.getTenantId(), eventId);
+            String link = String.format("%smeeting/%s/%s", uriInfo.getBaseUri(), tenantCtx.getTenantId(), eventId);
             vEvent.setLocation(link);
             vEvent.setUrl(link);
         }

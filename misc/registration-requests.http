@@ -7,11 +7,11 @@ Content-Type: application/x-www-form-urlencoded
 
 eventId={{eventId}}&name=Gerd&email=gerd@aschemann.net
 
-### Upload additional webinar data to event <3>
+### Upload additional meeting data to event <3>
 PUT {{baseurl}}/admin/events/{{eventId}}/data
 Content-Type: application/json
 
-{"url" : "https://example.com/webinar", "title":  "Titel"}
+{"url" : "https://example.com/meeting", "title":  "Titel"}
 
 ### Send e-mail message to participants <4>
 PUT {{baseurl}}/admin/events/{{eventId}}/message
@@ -30,8 +30,8 @@ GET {{baseurl}}/admin/events/{{eventId}}
 GET {{baseurl}}/admin/events/{{eventId}}
 Accept: application/json
 
-### Show Webinar data <8>
-GET {{baseurl}}/webinar/{{eventId}}
+### Show meeting data <8>
+GET {{baseurl}}/meeting/{{eventId}}
 
 ### Delete my registration - You need to append the registration UUID received in #<2> <9>
 DELETE {{baseurl}}/delete?id=3053214b-39fb-448a-8dbb-eb148c984a99

@@ -3,7 +3,7 @@
     <div class="d-flex justify-content-between align-items-center">
         <h2 class="fw-light my-3">Anmeldungen für Event am {event.startDate ?: eventDate}: {registrations.size}</h2>
         {#if eventData.get('webinarLink')??}
-        <a href="/webinar/{inject:tenant.id}/{eventId}" target="_blank" class="btn btn-primary">Zum Online-Meeting</a>
+        <a href="/meeting/{inject:tenant.id}/{eventId}" target="_blank" class="btn btn-primary">Zum Online-Meeting</a>
         {/if}
     </div>
     {#if event}
@@ -89,7 +89,7 @@
 
 Du hast Dich für unseren heutigen Online-Vortrag angemeldet. Den Link zur Einwahl und weitere Informationen findest Du hier:
 
-{baseUrl}webinar/{inject:tenant.id}/{eventId}
+{baseUrl}meeting/{inject:tenant.id}/{eventId}
 
 Bis heute Abend, wir freuen uns auf Dein Kommen. Im Anschluss an den Vortrag kannst Du übrigens gern noch bei unserem virtuellen Stammtisch mitplaudern oder einfach nur zuhören.
 

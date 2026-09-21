@@ -7,12 +7,12 @@ include::registration-requests.http[]
 ----
 <1> Show the current number of registrations and the HTML form to register
 <2> Register participant for an event
-<3> Upload additional webinar data to event
+<3> Upload additional meeting data to event
 <4> Send e-mail message to participants
 <5> Show overview of events
-<6> Event administration UI (send mail, upload Webinar data)
-<7> Optional: Event administration REST (send mail, upload Webinar data)
-<8> Show Webinar data
+<6> Event administration UI (send mail, upload meeting data)
+<7> Optional: Event administration REST (send mail, upload meeting data)
+<8> Show meeting data
 <9> Delete registration by unique key (_Caution_: This request is incomplete, you need to add the unique id you received on registration)
 <10> Delete registration of participant by eventId and e-mail address
 <11> Delete registration by eventId and unique key (_Caution_: This request is incomplete, you need to add the unique id you received on registration)

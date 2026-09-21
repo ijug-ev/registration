@@ -60,7 +60,7 @@ public class AdminFunctionalTest extends FunctionalTestBase {
         ;
     }
 
-    // Upload additional webinar data to event
+    // Upload additional meeting data to event
     @Test
     void testUploadEventData() {
         given().contentType(ContentType.JSON)
@@ -166,7 +166,7 @@ public class AdminFunctionalTest extends FunctionalTestBase {
 
     // The "Zum Online-Meeting" button needs the tenant in its path, otherwise it 404s
     @Test
-    void testEventRegistrationsLinkToWebinarPageOfThisTenant() {
+    void testEventRegistrationsLinkToMeetingPageOfThisTenant() {
         given().contentType(ContentType.JSON)
             .pathParam("eventId", EVENT_ID)
             .body("{\"webinarLink\" : \"https://example.com/webinar\"}")
@@ -178,7 +178,7 @@ public class AdminFunctionalTest extends FunctionalTestBase {
             .get("/admin/" + TENANT + "/events/{eventId}")
             .then()
             .statusCode(200)
-            .body(containsString("href=\"/webinar/" + TENANT + "/" + EVENT_ID + "\""))
+            .body(containsString("href=\"/meeting/" + TENANT + "/" + EVENT_ID + "\""))
         ;
     }
 
@@ -480,10 +480,18 @@ public class AdminFunctionalTest extends FunctionalTestBase {
             .body(containsString("Version " + version));
     }
 
+    // Stores its own link: the page needs one, and relying on another test having uploaded it makes
+    // this test depend on the order JUnit happens to run them in -- which changes with a method rename
     @Test
-    void testWebinarPage() {
+    void testMeetingPage() {
+        given().contentType(ContentType.JSON)
+            .pathParam("eventId", EVENT_ID)
+            .body("{\"webinarLink\" : \"https://example.com/meeting\"}")
+            .put("/admin/" + TENANT + "/events/{eventId}/data")
+            .then().statusCode(204);
+
         given()
-            .get("/webinar/" + TENANT + "/" + EVENT_ID)
+            .get("/meeting/" + TENANT + "/" + EVENT_ID)
             .then()
             .statusCode(200)
             .body("html.body.div.div[1].div.h3", equalTo("Link zu unserem Online-Meeting"))
