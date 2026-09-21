@@ -18,29 +18,15 @@
     </p>
 
     <form method="post" action="/admin/{tenant.id}/tenants">
-        <div class="mb-2 row">
-            <label for="id" class="col-3 col-form-label">ID</label>
-            <div class="col-9">
-                <input type="text" class="form-control" id="id" name="id" value="{newTenantId ?: ''}"
-                       required autofocus>
-                <small class="form-text text-muted">
-                    Kleinbuchstaben, Ziffern und Bindestriche, z.B. <code>jugda</code>. Die ID steht
-                    in allen URLs der JUG und muss genauso als Keycloak-Rolle vergeben werden.
-                    Sie lässt sich später nicht mehr ändern.
-                </small>
-            </div>
-        </div>
-        <div class="mb-2 row">
-            <label for="name" class="col-3 col-form-label">Name</label>
-            <div class="col-9">
-                <input type="text" class="form-control" id="name" name="name" value="{newTenantName ?: ''}"
-                       required>
-                <small class="form-text text-muted">
-                    Ausgeschriebener Name, z.B. <code>JUG Darmstadt</code>. Erscheint in Betreffzeilen,
-                    Grußformeln und im Kalendereintrag.
-                </small>
-            </div>
-        </div>
+        {#field name="id" label="ID" value=newTenantId required=true autofocus=true}
+            Kleinbuchstaben, Ziffern und Bindestriche, z.B. <code>jugda</code>. Die ID steht
+            in allen URLs der JUG und muss genauso als Keycloak-Rolle vergeben werden.
+            Sie lässt sich später nicht mehr ändern.
+        {/field}
+        {#field name="name" label="Name" value=newTenantName required=true}
+            Ausgeschriebener Name, z.B. <code>JUG Darmstadt</code>. Erscheint in Betreffzeilen,
+            Grußformeln und im Kalendereintrag.
+        {/field}
         <div class="mb-3 mt-3">
             <button type="submit" class="btn btn-primary">JUG anlegen</button>
         </div>
