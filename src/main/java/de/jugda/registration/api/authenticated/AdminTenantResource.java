@@ -55,16 +55,7 @@ public class AdminTenantResource {
             return Response.ok(page(form, "Das CSS darf kein </style> enthalten.")).build();
         }
 
-        Tenant tenant = tenantCtx.getTenant();
-        tenant.setName(form.getName());
-        tenant.setWebsite(form.getWebsite());
-        tenant.setPrivacy(form.getPrivacy());
-        tenant.setImprint(form.getImprint());
-        tenant.setLogo(form.getLogo());
-        tenant.setReplyTo(form.getReplyTo());
-        tenant.setEvents(form.getEvents());
-        // The field is optional: an emptied textarea has to clear the column, not store a blank string
-        tenant.setCss(form.getCss() == null || form.getCss().isBlank() ? null : form.getCss().strip());
+        tenantCtx.getTenant().updateFrom(form);
         return Response.status(Response.Status.FOUND)
             .location(uriInfo.getRequestUri())
             .build();

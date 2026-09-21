@@ -10,6 +10,7 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import de.jugda.registration.model.TenantForm;
 import org.hibernate.annotations.TenantId;
 
 @Entity
@@ -32,4 +33,20 @@ public class Tenant extends PanacheEntityBase {
     /** Optional, tenant-owned stylesheet for the participant pages, see {@link de.jugda.registration.TenantStyle}. */
     @Column(columnDefinition = "text")
     private String css;
+
+    /**
+     * Applies the master data form, like {@link Registration#updateFrom} does for a registration:
+     * the column list stays next to the columns. The id is not part of it -- it is the tenant key.
+     */
+    public void updateFrom(TenantForm form) {
+        this.name = form.getName();
+        this.website = form.getWebsite();
+        this.privacy = form.getPrivacy();
+        this.imprint = form.getImprint();
+        this.logo = form.getLogo();
+        this.replyTo = form.getReplyTo();
+        this.events = form.getEvents();
+        // The field is optional: an emptied textarea has to clear the column, not store a blank string
+        this.css = form.getCss() == null || form.getCss().isBlank() ? null : form.getCss().strip();
+    }
 }

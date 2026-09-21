@@ -19,7 +19,7 @@ public abstract class FunctionalTestBase {
     static final LocalDate TEST_EVENT_DATE = LocalDate.now().plusMonths(1);
     static final String EVENT_ID = TEST_EVENT_DATE.format(DateTimeFormatter.ISO_LOCAL_DATE);
 
-    private static final Duration MAIL_TIMEOUT = Duration.ofSeconds(10);
+    static final Duration MAIL_TIMEOUT = Duration.ofSeconds(10);
 
     static final List<Participant> PARTICIPANTS = List.of(
         new Participant("John Doe", "john.doe@example.com"),

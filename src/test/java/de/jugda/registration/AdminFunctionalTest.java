@@ -158,7 +158,7 @@ public class AdminFunctionalTest extends FunctionalTestBase {
             .get("/admin/" + TENANT + "/events/1999-12-31")
             .then()
             .statusCode(200)
-            .body(containsString("Anmeldungen f\u00fcr Event am 1999-12-31"))
+            .body(containsString("Anmeldungen f\u00fcr Event am 31.12.1999"))
             .body(containsString("Kalender-Feed"))
             .body(not(containsString("eventStartDate")))
             .body(not(containsString("eventSummary")));

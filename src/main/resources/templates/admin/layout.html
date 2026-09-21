@@ -4,9 +4,9 @@ Layout of the admin area: sidebar menu, content column, page heading, error aler
 Deliberately on top of template.html and not on top of public.html -- the admin pages must not pick
 up the tenant's own stylesheet, because a broken stylesheet would break the very form that repairs it.
 
-A page passes heading="..." and fills {#content}; a page whose heading is more than a title (see
-list.html) overrides {#heading} instead. colStyle and error are optional: "error" is only read when
-the page actually supplies it, so no page has to pass an empty one just to satisfy strict rendering.
+A page fills {#content} and passes what it needs: nav, heading, colStyle, error. All of them are
+optional, hence the .or(...) and ?? guards -- strict rendering fails on a key nobody supplied. A
+page's own {#scripts} block reaches template.html by itself, no forwarding needed.
 !}
 {#include template.html}
 {#body}
@@ -14,7 +14,7 @@ the page actually supplies it, so no page has to pass an empty one just to satis
     <div class="row">
         {#include admin/menu.html/}
         <div class="col" style="{colStyle.or('')}">
-            {#insert heading}<h2 class="fw-light my-3">{heading}</h2>{/}
+            {#if heading??}<h2 class="fw-light my-3">{heading}</h2>{/if}
             {#if error??}
             <div class="alert alert-danger" role="alert">{error}</div>
             {/if}
@@ -23,5 +23,4 @@ the page actually supplies it, so no page has to pass an empty one just to satis
     </div>
 </div>
 {/body}
-{#scripts}{#insert scripts}{/}{/scripts}
 {/include}

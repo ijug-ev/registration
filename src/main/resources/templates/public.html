@@ -5,11 +5,13 @@ reach the iframe-embedded pages -- but never the admin area itself, because a br
 not break the form used to repair it. That is why this is a separate layout on top of template.html
 and not a section of it: the admin pages include template.html directly and stay unstyled by design.
 
-A page fills {#body} and, if it needs one, {#scripts}; both are passed through to template.html
-unchanged, as is {#title}.
+The stylesheet is inlined rather than linked: these pages run inside an iframe on someone else's
+website, where a second request would only add latency before the first paint. It sits last in
+<head>, so the JUG's own rules win over Bootstrap.
+
+A page's own {#body}, {#scripts} and {#title} need no forwarding from here -- Qute looks a section
+up the entire include chain, so a layout only names the sections it actually fills.
 !}
 {#include template.html}
-{#styles}{#include tenantstyle.html/}{/styles}
-{#body}{#insert body}No body!{/}{/body}
-{#scripts}{#insert scripts}{/}{/scripts}
+{#styles}{#if inject:tenantStyle.present}<style>{inject:tenantStyle.css}</style>{/if}{/styles}
 {/include}

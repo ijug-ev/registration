@@ -9,7 +9,6 @@ import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -33,6 +32,17 @@ public class RegistrationAndDeletionFunctionalTest extends FunctionalTestBase {
     void cleanup(){
         mailbox.clear();
         em.createNativeQuery("DELETE FROM registration").executeUpdate();
+    }
+
+    /**
+     * Awaitility polls on a thread of its own unless told otherwise, and CurrentTenantResolver is
+     * request scoped -- a query from that thread dies with "no tenant identifier specified".
+     */
+    void awaitConfirmationSentAt(String email) {
+        await("confirmation timestamp for " + email)
+            .atMost(MAIL_TIMEOUT)
+            .pollInSameThread()
+            .untilAsserted(() -> assertThat(confirmationSentAt(email)).isNotNull());
     }
 
     @Transactional
@@ -102,12 +112,7 @@ public class RegistrationAndDeletionFunctionalTest extends FunctionalTestBase {
         assertThat(mailbox.getTotalMessagesSent()).isEqualTo(3);
 
         // The promotion cleared the stamp and the delivered mail set it again
-        // pollInSameThread: the tenant resolver is request-scoped, and Awaitility's own poll
-        // thread has no request context - the query would fail with "no tenant identifier".
-        await("the promotion to be stamped on the row")
-            .atMost(Duration.ofSeconds(10))
-            .pollInSameThread()
-            .untilAsserted(() -> assertThat(confirmationSentAt(waiting.getEmail())).isNotNull());
+        awaitConfirmationSentAt(waiting.getEmail());
     }
 
     // The message type is the contract with the embedding JUG sites (docs/handbuch.adoc)
@@ -149,10 +154,7 @@ public class RegistrationAndDeletionFunctionalTest extends FunctionalTestBase {
             .doesNotContain("calendar.google.com");
 
         // and the send is recorded, so the admin list shows a green envelope rather than a red one
-        await("confirmation timestamp")
-            .atMost(Duration.ofSeconds(10))
-            .pollInSameThread()
-            .untilAsserted(() -> assertThat(confirmationSentAt(participant.getEmail())).isNotNull());
+        awaitConfirmationSentAt(participant.getEmail());
     }
 
     @Test

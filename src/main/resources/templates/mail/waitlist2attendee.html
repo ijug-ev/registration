@@ -2,13 +2,9 @@
 {! See mail/registration.html: the event can be missing from the calendar feed, the mail still has to go out. !}
 <p>
     Herzlichen Glückwunsch!<br/>
-    {#if event}
-    Wir konnten Dich für unsere Veranstaltung "{event.summary}" am {event.startDate} um {event.startTime} Uhr von der Warteliste auf die reguläre Teilnehmerliste setzen.
-    {#else}
-    Wir konnten Dich für unsere Veranstaltung am {registration.formattedEventDate} von der Warteliste auf die reguläre Teilnehmerliste setzen.
-    {/if}
+    Wir konnten Dich für unsere Veranstaltung{#if event} "{event.summary}" am {event.startDate} um {event.startTime} Uhr{#else} am {registration.formattedEventDate}{/if} von der Warteliste auf die reguläre Teilnehmerliste setzen.
 </p>
-{#if event}{#include mail/ical.html/}{/if}
+{#include mail/ical.html/}
 {#include mail/deregistration.html}
 {#id}{registration.id}{/id}
 {/include}

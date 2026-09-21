@@ -21,8 +21,8 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.core.UriInfo;
 
 import java.net.URI;
-import java.util.Collection;
 import java.util.List;
+import java.util.stream.Gatherers;
 
 @ApplicationScoped
 public class EmailService {
@@ -107,7 +107,15 @@ public class EmailService {
     private record ParticipantMail(Template template, String subjectLabel) {
     }
 
-    public void sendBulkEmail(Collection<List<RegistrationDto>> chunkedRegistrations, String subject, String body) {
+    /** How many recipients share one {@code mailer.send(Mail...)} call. */
+    private static final int MAILS_PER_SEND = 50;
+
+    public void sendBulkEmail(List<RegistrationDto> recipients, String subject, String body) {
+        if (recipients.isEmpty()) {
+            // Nobody selected: nothing to render either, and the form need not have sent a body at all
+            return;
+        }
+
         subject = sanitize(subject);
         body = sanitize(body);
 
@@ -119,9 +127,9 @@ public class EmailService {
         String replyTo = tenantCtx.getTenant().getReplyTo();
         URI baseUrl = uriInfo.getBaseUri();
 
-        // One send call per chunk: the mailer dispatches a batch concurrently, which is what the
-        // caller's chunking is for - flattening it away sends one blocking mail at a time.
-        chunkedRegistrations.forEach(chunk -> {
+        // One send call per chunk: the mailer dispatches such a batch concurrently, so chunking is what
+        // keeps a mail to a few hundred people from going out one blocking send at a time.
+        recipients.stream().gather(Gatherers.windowFixed(MAILS_PER_SEND)).forEach(chunk -> {
             Mail[] mails = chunk.stream()
                 .map(registration -> {
                     String emailMessage = messageTemplate

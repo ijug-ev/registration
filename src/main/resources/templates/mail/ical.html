@@ -1,6 +1,11 @@
+{! Needs the event: every link below is built from the feed entry. Guarded here rather than at the
+   two call sites, so a third mail that includes it cannot forget -- and forgetting used to mean the
+   whole mail failed to render and the participant silently got nothing. !}
+{#if event}
 <p>
     Hier kannst Du Dir eine
     <a href="{baseUrl}registration/{tenant.id}/ical/{registration.eventId}">iCal/.ics Datei zur Veranstaltung runterladen</a>
     oder einen
     <a href="https://calendar.google.com/calendar/r/eventedit?text={event.summary}&dates={event.startDateTimeBasic}/{event.endDateTimeBasic}&details={event.description}%20{event.url}&location={event.location}">Google Calender Eintrag erzeugen</a>.
 </p>
+{/if}

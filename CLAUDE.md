@@ -124,10 +124,12 @@ script slot, the height reporter). Above it sit two layouts, and a page includes
 | `admin/layout.html` | the 6 admin pages | container, menu, content column, heading, error alert |
 
 A page fills `{#content}` (`{#body}` on the participant pages, which *are* the body) and passes what the
-layout needs as include parameters: `heading="..."`, `nav="..."`, `colStyle="..."`. Multi-level
-inheritance works -- a section the middle layout never mentions, like `{#title}`, passes straight
-through to the base, and a middle layout can re-expose a section under the same name
-(`{#scripts}{#insert scripts}{/}{/scripts}`).
+layout needs as include parameters: `heading="..."`, `nav="..."`, `colStyle="..."`. **A layout only names
+the sections it actually fills.** Qute resolves an `{#insert}` up the entire include chain, so a page's
+`{#body}`, `{#scripts}` or `{#title}` reaches `template.html` through any number of layouts that never
+mention it -- forwarding blocks like `{#scripts}{#insert scripts}{/}{/scripts}` are pure no-ops.
+A page whose heading is more than a title (`admin/list.html`) simply omits `heading` and writes its
+own markup at the top of `{#content}`.
 
 **Optional include parameters need `.or(...)`, optional data needs `??`.** Strict rendering is on: an
 expression whose key nobody supplied is a 500, not an empty string. That is why the layout writes
@@ -208,9 +210,10 @@ identifier specified*. Mailbox assertions are unaffected (`MockMailbox` is a sin
 
 The bulk mail (`EmailService.sendBulkEmail`, admin UI) still runs synchronously in the request -- it
 has no transaction problem and the admin wants to see the result right away. It issues *one*
-`mailer.send(Mail...)` call per chunk of 50 (built in `AdminEventsResource.sendMessage`), which the
-mailer processes as a batch. The chunk must therefore not be flattened -- otherwise every mail goes
-out individually and blocking. The Qute `Fmt` of the bulk mail is deliberately **not** cached: Qute's
+`mailer.send(Mail...)` call per chunk of 50, which the mailer processes as a batch. The chunking lives
+in `sendBulkEmail` itself (`Gatherers.windowFixed`), next to the send it exists for -- callers hand over
+a plain list of recipients and cannot flatten it away by accident, which would send every mail
+individually and blocking. The Qute `Fmt` of the bulk mail is deliberately **not** cached: Qute's
 template cache is unbounded, and bulk mail texts are free-form admin input.
 
 Tests: because the mails go out asynchronously, they have not necessarily arrived by the time the HTTP
@@ -227,8 +230,10 @@ in the admin area under *JUG Data*, to match the iframe-embedded pages to their 
 - **Only the participant pages get it, never the admin area.** A broken stylesheet must not break the
   very form used to repair it. Implemented as **opt-in through the layout**: `template.html` has an
   `{#insert styles}{/}` slot in `<head>` (behind Bootstrap, so the tenant's own rules win), and
-  `public.html` -- the layout of every participant page -- is the only template that fills it with
-  `{#styles}{#include tenantstyle.html/}{/styles}`. The admin pages include `template.html` directly and
+  `public.html` -- the layout of every participant page -- is the only template that fills it. The
+  `<style>` element is written there inline, deliberately not linked: these pages run in an iframe on
+  someone else's site, where a second request only delays the first paint. The admin pages include
+  `template.html` directly and
   stay unstyled by design. Opt-out would be shorter but would silently colour any admin page added later;
   it used to be opt-in per page, which meant every new participant page had to remember two lines.
 - It is supplied by **`TenantStyle`**, a `@Named("tenantStyle") @RequestScoped` bean like `CurrentUser`,

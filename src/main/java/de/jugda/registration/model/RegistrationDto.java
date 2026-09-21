@@ -5,10 +5,8 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.Map;
 
 /**
@@ -32,17 +30,9 @@ public class RegistrationDto {
     public LocalDateTime confirmationSentAt;
     public Long ttl;
 
-    /**
-     * The event date for mails that have no event to name: the eventId is a date by convention
-     * ({@code 2026-10-21}), but it is a free-form path parameter, so a value that does not parse is
-     * handed back unchanged rather than breaking the mail that is trying to apologise for a missing event.
-     */
+    /** The event date for mails that have no event to name, see {@link EventDates}. */
     public String formattedEventDate() {
-        try {
-            return LocalDate.parse(eventId).format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
-        } catch (DateTimeParseException e) {
-            return eventId;
-        }
+        return EventDates.display(eventId);
     }
 
     // needed by template

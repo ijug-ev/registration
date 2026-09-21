@@ -1,5 +1,6 @@
 package de.jugda.registration.api.authenticated;
 
+import de.jugda.registration.model.EventDates;
 import de.jugda.registration.model.EventDto;
 import de.jugda.registration.model.RegistrationDto;
 import de.jugda.registration.service.EmailService;
@@ -25,19 +26,11 @@ import jakarta.ws.rs.core.UriInfo;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Gatherers;
 
 @Path("admin/{tenant}/events")
 @Produces(MediaType.TEXT_HTML)
 @Authenticated
 public class AdminEventsResource {
-
-    /**
-     * How many participants share one {@code mailer.send(Mail...)} call. The mailer dispatches such a
-     * batch concurrently, so the chunking is what keeps a bulk mail to a few hundred people from being
-     * sent one blocking mail at a time.
-     */
-    private static final int MAILS_PER_SEND = 50;
 
     @Inject
     ListService listService;
@@ -52,6 +45,7 @@ public class AdminEventsResource {
 
     @Context
     UriInfo uriInfo;
+
     @GET
     public TemplateInstance getAllEvents() {
         Map<String, Integer> events = listService.allEvents();
@@ -67,6 +61,7 @@ public class AdminEventsResource {
         Map<String, String> eventData = eventService.getEventData(eventId);
 
         return list.data("eventId", eventId)
+            .data("eventDate", EventDates.display(eventId))
             .data("event", event)
             .data("eventData", eventData)
             .data("baseUrl", uriInfo.getBaseUri())
@@ -106,14 +101,11 @@ public class AdminEventsResource {
 
         // Membership test per registration, so the selection is a set and not a list scan
         Set<String> selected = Set.copyOf(bulkMail.registrationIds());
-        List<List<RegistrationDto>> chunkedRegistrations = listService.singleEventRegistrations(eventId).stream()
+        List<RegistrationDto> recipients = listService.singleEventRegistrations(eventId).stream()
             .filter(registration -> selected.contains(registration.getId()))
-            .gather(Gatherers.windowFixed(MAILS_PER_SEND))
             .toList();
 
-        if (!chunkedRegistrations.isEmpty()) {
-            emailService.sendBulkEmail(chunkedRegistrations, bulkMail.subject(), bulkMail.message());
-        }
+        emailService.sendBulkEmail(recipients, bulkMail.subject(), bulkMail.message());
 
         return Response.noContent().build();
     }
