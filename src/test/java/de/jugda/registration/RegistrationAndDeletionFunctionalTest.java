@@ -124,6 +124,37 @@ public class RegistrationAndDeletionFunctionalTest extends FunctionalTestBase {
             .body(containsString("ijug-registration:height"));
     }
 
+    // JUGs drop past events from their calendar feed while the registrations live on. The confirmation
+    // mail used to die on {event.summary} of a null event, and because the observer is asynchronous the
+    // exception was only logged: the participant got nothing, the admin list a red envelope, and the
+    // thank-you page claimed success. The mail now goes out without the event details.
+    @Test
+    void testConfirmationMailIsSentEvenWhenTheEventIsNotInTheCalendarFeed() {
+        Participant participant = PARTICIPANTS.get(0);
+        given().contentType(ContentType.URLENC)
+            .formParams(
+                "eventId", "1999-12-31",
+                "name", participant.getName(),
+                "email", participant.getEmail()
+            )
+            .post("/registration/" + TENANT)
+            .then()
+            .statusCode(200);
+
+        List<Mail> mails = awaitMailsTo(participant.getEmail(), 1);
+        assertThat(mails.getFirst().getSubject()).isEqualTo("[Test-JUG] Anmeldebest\u00e4tigung");
+        assertThat(mails.getFirst().getHtml())
+            .contains("31.12.1999")
+            .doesNotContain("null")
+            .doesNotContain("calendar.google.com");
+
+        // and the send is recorded, so the admin list shows a green envelope rather than a red one
+        await("confirmation timestamp")
+            .atMost(Duration.ofSeconds(10))
+            .pollInSameThread()
+            .untilAsserted(() -> assertThat(confirmationSentAt(participant.getEmail())).isNotNull());
+    }
+
     @Test
     void testGetRegistrationForm() {
         given()

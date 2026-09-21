@@ -1,17 +1,29 @@
 <h3>Hallo {registration.name}!</h3>
+{! The event may be missing from the JUG's calendar feed -- past events drop out of it, and the
+   registrations outlive them. The mail then confirms the registration without naming the event,
+   exactly like the subject line does, instead of failing to render and never being sent at all. !}
 {#if registration.waitlist}
 <p>
-    Vielen Dank für Deine Anmeldung für unsere Veranstaltung "{event.summary} am {event.startDate} um {event.startTime} Uhr.<br/>
+    {#if event}
+    Vielen Dank für Deine Anmeldung für unsere Veranstaltung "{event.summary}" am {event.startDate} um {event.startTime} Uhr.<br/>
+    {#else}
+    Vielen Dank für Deine Anmeldung für unsere Veranstaltung am {registration.formattedEventDate}.<br/>
+    {/if}
     Da wir derzeit komplett ausgebucht sind, haben wir Dich in der Warteliste aufgenommen.
     Wir informieren Dich, sobald wir Dich auf die Teilnehmerliste übernehmen können.
 </p>
 {#else}
 <p>
+    {#if event}
     Vielen Dank für Deine Anmeldung für unsere Veranstaltung "{event.summary}".<br/>
     Wir freuen uns, Dich am {event.startDate} um {event.startTime} Uhr bei uns begrüßen zu dürfen.
+    {#else}
+    Vielen Dank für Deine Anmeldung für unsere Veranstaltung am {registration.formattedEventDate}.<br/>
+    Wir freuen uns, Dich bei uns begrüßen zu dürfen.
+    {/if}
 </p>
 <p>Bei einem Online-Event senden wir Dir kurz vor dem Start eine E-Mail mit dem Link zum Meeting.</p>
-{#include mail/ical.html/}
+{#if event}{#include mail/ical.html/}{/if}
 {/if}
 {#include mail/deregistration.html}
 {#id}{registration.id}{/id}
