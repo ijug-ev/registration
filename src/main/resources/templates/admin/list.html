@@ -2,7 +2,7 @@
 {#content}
     <div class="d-flex justify-content-between align-items-center">
         <h2 class="fw-light my-3">Anmeldungen für Event am {event.startDate ?: eventDate}: {registrations.size}</h2>
-        {#if eventData.get('webinarLink')??}
+        {#if eventData.get('meetingLink')??}
         <a href="/meeting/{inject:tenant.id}/{eventId}" target="_blank" class="btn btn-primary">Zum Online-Meeting</a>
         {/if}
     </div>
@@ -111,9 +111,9 @@ Dein {inject:tenant.name} Orga-Team</textarea>
             <h4>Event-Infos</h4>
             <form onsubmit="return submitEventData()">
                 <div class="mb-2 row">
-                    <label for="webinarLink" class="col-2 col-form-label">Webinar-Link</label>
+                    <label for="meetingLink" class="col-2 col-form-label">Meeting-Link</label>
                     <div class="col-10">
-                        <input type="text" class="form-control" id="webinarLink" value="{eventData.get('webinarLink')??}">
+                        <input type="text" class="form-control" id="meetingLink" value="{eventData.get('meetingLink')??}">
                     </div>
                 </div>
                 <button type="submit" class="btn btn-primary">Speichern</button>
@@ -137,7 +137,7 @@ Dein {inject:tenant.name} Orga-Team</textarea>
     }
     function submitEventData() {
         const data = {
-            webinarLink: $('#webinarLink').val()
+            meetingLink: $('#meetingLink').val()
         };
         $.ajax({
             url: '{eventId}/data',

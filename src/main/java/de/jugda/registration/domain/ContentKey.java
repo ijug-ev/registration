@@ -25,8 +25,8 @@ public enum ContentKey {
         "Text über der Einwilligungs-Checkbox am Ende des Anmeldeformulars."),
     REGISTRATION_WAITLIST("registration.waitlist", "Hinweis: Warteliste",
         "Erscheint statt der normalen Einleitung, sobald das Event ausgebucht ist."),
-    WEBINAR_TOOLS("webinar.tools", "Hinweis: Konferenzwerkzeuge",
-        "Steht auf der Webinar-Seite unter dem Meeting-Link.");
+    MEETING_TOOLS("meeting.tools", "Hinweis: Konferenzwerkzeuge",
+        "Steht auf der Meeting-Seite unter dem Meeting-Link.");
 
     private final String key;
     private final String label;

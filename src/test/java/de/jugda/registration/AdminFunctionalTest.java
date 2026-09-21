@@ -65,7 +65,7 @@ public class AdminFunctionalTest extends FunctionalTestBase {
     void testUploadEventData() {
         given().contentType(ContentType.JSON)
             .pathParam("eventId", EVENT_ID)
-            .body("{\"webinarLink\" : \"https://example.com/webinar\"}")
+            .body("{\"meetingLink\" : \"https://example.com/meeting\"}")
             .put("/admin/" + TENANT + "/events/{eventId}/data")
             .then()
             .statusCode(204);
@@ -169,7 +169,7 @@ public class AdminFunctionalTest extends FunctionalTestBase {
     void testEventRegistrationsLinkToMeetingPageOfThisTenant() {
         given().contentType(ContentType.JSON)
             .pathParam("eventId", EVENT_ID)
-            .body("{\"webinarLink\" : \"https://example.com/webinar\"}")
+            .body("{\"meetingLink\" : \"https://example.com/meeting\"}")
             .put("/admin/" + TENANT + "/events/{eventId}/data")
             .then().statusCode(204);
 
@@ -192,7 +192,7 @@ public class AdminFunctionalTest extends FunctionalTestBase {
             .body(containsString("registration.video"))
             .body(containsString("registration.disclaimer"))
             .body(containsString("registration.waitlist"))
-            .body(containsString("webinar.tools"));
+            .body(containsString("meeting.tools"));
     }
 
     // What the orga team saves here has to reach the public form -- otherwise they are editing into the void
@@ -486,7 +486,7 @@ public class AdminFunctionalTest extends FunctionalTestBase {
     void testMeetingPage() {
         given().contentType(ContentType.JSON)
             .pathParam("eventId", EVENT_ID)
-            .body("{\"webinarLink\" : \"https://example.com/meeting\"}")
+            .body("{\"meetingLink\" : \"https://example.com/meeting\"}")
             .put("/admin/" + TENANT + "/events/{eventId}/data")
             .then().statusCode(204);
 
