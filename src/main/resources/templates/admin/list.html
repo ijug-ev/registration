@@ -84,14 +84,14 @@
                     <label for="message" class="form-label">Nachricht</label>
                     <textarea id="message" class="form-control" rows="8">Hallo {{name}}!
 
-        Du hast Dich für unseren heutigen Online-Vortrag angemeldet. Den Link zur Einwahl und weitere Informationen findest Du hier:
+Du hast Dich für unseren heutigen Online-Vortrag angemeldet. Den Link zur Einwahl und weitere Informationen findest Du hier:
 
-        {baseUrl}webinar/{inject:tenant.id}/{eventId}
+{baseUrl}webinar/{inject:tenant.id}/{eventId}
 
-        Bis heute Abend, wir freuen uns auf Dein Kommen. Im Anschluss an den Vortrag kannst Du übrigens gern noch bei unserem virtuellen Stammtisch mitplaudern oder einfach nur zuhören.
+Bis heute Abend, wir freuen uns auf Dein Kommen. Im Anschluss an den Vortrag kannst Du übrigens gern noch bei unserem virtuellen Stammtisch mitplaudern oder einfach nur zuhören.
 
-        Viele Grüße
-        Dein {inject:tenant.name} Orga-Team</textarea>
+Viele Grüße
+Dein {inject:tenant.name} Orga-Team</textarea>
                 </div>
                 <button type="submit" class="btn btn-info">Senden</button>
             </form>
@@ -101,7 +101,7 @@
             <div class="mb-2">
                 <label for="names" class="form-label">Namen</label>
                 <textarea id="names" class="form-control" rows="8">{#for reg in registrations}{reg.name}
-        {/for}</textarea>
+{/for}</textarea>
             </div>
         </div>
         <div class="collapse mt-3 mb-3" id="collapseEventData">
