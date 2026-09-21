@@ -413,9 +413,26 @@ public class AdminFunctionalTest extends FunctionalTestBase {
     @ParameterizedTest
     @ValueSource(strings = {"events", "data", "content"})
     void testMenuLinksAreAbsoluteOnTheEventDetailPage(String page) {
-        given().get("/admin/" + TENANT + "/events/" + EVENT_ID)
+        given().accept(ContentType.HTML)
+            .get("/admin/" + TENANT + "/events/" + EVENT_ID)
             .then().statusCode(200)
             .body(containsString(menuHref(page)));
+    }
+
+    // Two resource methods share this path, HTML and JSON. A client that states no preference gets the
+    // page: the JSON variant is the one you ask for, and until now which one answered was up to the
+    // order the runtime discovered the methods in -- which changes between JVM runs.
+    @Test
+    void testTheEventDetailPathServesHtmlWhenTheClientHasNoPreference() {
+        given().accept("*/*")
+            .get("/admin/" + TENANT + "/events/" + EVENT_ID)
+            .then().statusCode(200)
+            .contentType(ContentType.HTML);
+
+        given().accept(ContentType.JSON)
+            .get("/admin/" + TENANT + "/events/" + EVENT_ID)
+            .then().statusCode(200)
+            .contentType(ContentType.JSON);
     }
 
     private static String menuHref(String page) {

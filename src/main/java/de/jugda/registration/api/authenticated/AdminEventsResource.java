@@ -66,9 +66,17 @@ public class AdminEventsResource {
             .data("registrations", registrations);
     }
 
+    /**
+     * The same path as {@link #getEventRegistrations(String)}, picked by the Accept header. A client
+     * that states no preference (a wildcard {@code Accept} header) has to get the page, not the raw
+     * list -- hence {@code qs=0.9}. With both variants at the default quality the choice came down to
+     * the order in which the runtime happened to discover the two methods, and that order is not stable
+     * across JVM runs: it failed {@code testMenuLinksAreAbsoluteOnTheEventDetailPage} about one build in
+     * eight, on whatever pull request happened to be open at the time.
+     */
     @GET
     @Path("{eventId}")
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON + ";qs=0.9")
     public List<RegistrationDto> getRegistrationList(@PathParam("eventId") String eventId) {
         return listService.singleEventRegistrations(eventId);
     }
