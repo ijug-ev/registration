@@ -10,6 +10,7 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.HexFormat;
 
 /**
  * Exposes the logged-in user to the templates, reachable as {@code inject:currentUser}.
@@ -52,11 +53,7 @@ public class CurrentUser {
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
             byte[] hash = md.digest(email.trim().toLowerCase().getBytes(StandardCharsets.UTF_8));
-            StringBuilder hex = new StringBuilder();
-            for (byte b : hash) {
-                hex.append(String.format("%02x", b));
-            }
-            return "https://www.gravatar.com/avatar/" + hex + "?d=mp&s=32";
+            return "https://www.gravatar.com/avatar/" + HexFormat.of().formatHex(hash) + "?d=mp&s=32";
         } catch (NoSuchAlgorithmException e) {
             return ANONYMOUS_AVATAR;
         }

@@ -10,6 +10,7 @@ import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.PUT;
@@ -21,16 +22,22 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
+import java.util.Set;
+import java.util.stream.Gatherers;
 
 @Path("admin/{tenant}/events")
 @Produces(MediaType.TEXT_HTML)
 @Authenticated
 public class AdminEventsResource {
+
+    /**
+     * How many participants share one {@code mailer.send(Mail...)} call. The mailer dispatches such a
+     * batch concurrently, so the chunking is what keeps a bulk mail to a few hundred people from being
+     * sent one blocking mail at a time.
+     */
+    private static final int MAILS_PER_SEND = 50;
 
     @Inject
     ListService listService;
@@ -92,26 +99,27 @@ public class AdminEventsResource {
     @PUT
     @Path("{eventId}/message")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response sendMessage(@PathParam("eventId") String eventId, Map<String, Object> data) {
-        String subject = (String) data.get("subject");
-        String message = (String) data.get("message");
-
-        //noinspection unchecked
-        List<String> registrationIds = (List<String>) data.get("registrationIds");
-        if (null == registrationIds) {
-            throw new IllegalArgumentException("Data does not contain any registrationIds");
+    public Response sendMessage(@PathParam("eventId") String eventId, BulkMail bulkMail) {
+        if (bulkMail == null || bulkMail.registrationIds() == null) {
+            throw new BadRequestException("Data does not contain any registrationIds");
         }
 
-        AtomicInteger index = new AtomicInteger(0);
-        Collection<List<RegistrationDto>> chunkedRegistrations = listService.singleEventRegistrations(eventId).stream()
-            .filter(registration -> registrationIds.contains(registration.getId()))
-            .collect(Collectors.groupingBy(x -> index.getAndIncrement() / 50)).values();
+        // Membership test per registration, so the selection is a set and not a list scan
+        Set<String> selected = Set.copyOf(bulkMail.registrationIds());
+        List<List<RegistrationDto>> chunkedRegistrations = listService.singleEventRegistrations(eventId).stream()
+            .filter(registration -> selected.contains(registration.getId()))
+            .gather(Gatherers.windowFixed(MAILS_PER_SEND))
+            .toList();
 
         if (!chunkedRegistrations.isEmpty()) {
-            emailService.sendBulkEmail(chunkedRegistrations, subject, message);
+            emailService.sendBulkEmail(chunkedRegistrations, bulkMail.subject(), bulkMail.message());
         }
 
         return Response.noContent().build();
+    }
+
+    /** The bulk mail form of {@code admin/list.html}. */
+    public record BulkMail(String subject, String message, List<String> registrationIds) {
     }
 
 }

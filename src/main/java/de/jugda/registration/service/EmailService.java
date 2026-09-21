@@ -82,8 +82,8 @@ public class EmailService {
      */
     private void sendParticipantMail(RegistrationEvent event) {
         ParticipantMail kind = switch (event) {
-            case RegistrationConfirmed ignored -> new ParticipantMail(tplRegistration, "Anmeldebestätigung");
-            case WaitlistPromoted ignored -> new ParticipantMail(tplWaitlist2attendee, "Dein Wartelisten-Eintrag");
+            case RegistrationConfirmed _ -> new ParticipantMail(tplRegistration, "Anmeldebestätigung");
+            case WaitlistPromoted _ -> new ParticipantMail(tplWaitlist2attendee, "Dein Wartelisten-Eintrag");
         };
 
         RegistrationDto registration = event.registration();
