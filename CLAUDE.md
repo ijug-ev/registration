@@ -92,7 +92,31 @@ creates the client role of the same name by hand.
 - `Content` — tenant-scoped UI help texts (name field hint, email hint, video recording notice, etc.).
 
 ### Templates
-Qute HTML templates in `src/main/resources/templates/`. Mail templates are in `templates/mail/`. All templates share `template.html` as the base layout via Qute includes.
+Qute HTML templates in `src/main/resources/templates/`. Mail templates are in `templates/mail/`.
+
+**Three layouts, no page-level chrome.** `template.html` is the base (html/head/body, Bootstrap, the
+script slot, the height reporter). Above it sit two layouts, and a page includes exactly one of them:
+
+| Layout | Used by | Adds |
+|---|---|---|
+| `public.html` | the 6 registration/deregistration pages | the tenant's own stylesheet |
+| `webinar/layout.html` (on `public.html`) | the 2 webinar pages | container, logo header, page title |
+| `admin/layout.html` | the 6 admin pages | container, menu, content column, heading, error alert |
+
+A page fills `{#content}` (`{#body}` on the participant pages, which *are* the body) and passes what the
+layout needs as include parameters: `heading="..."`, `nav="..."`, `colStyle="..."`. Multi-level
+inheritance works -- a section the middle layout never mentions, like `{#title}`, passes straight
+through to the base, and a middle layout can re-expose a section under the same name
+(`{#scripts}{#insert scripts}{/}{/scripts}`).
+
+**Optional include parameters need `.or(...)`, optional data needs `??`.** Strict rendering is on: an
+expression whose key nobody supplied is a 500, not an empty string. That is why the layout writes
+`{colStyle.or('')}` and `{#if error??}`, and why `tags/field.html` guards its hint with
+`{#if nested-content??}` -- for a `{#field ... /}` call without a body that key does not exist at all.
+
+**`templates/tags/` holds user-defined tags**, registered automatically under their file name.
+`tags/field.html` is one labelled row of an admin form, called as
+`{#field name="website" label="Website" type="url" value=form.website /}`, with the hint as tag body.
 
 **Page scripts belong in the `{#scripts}` block, not in `{#body}`.** `template.html` loads jQuery and Bootstrap at the end of `<body>` and then offers a `{#insert scripts}{/}` slot. A `<script>` inside `{#body}` is rendered before the library tags and therefore runs before `$` exists -- with no visible error, the page just stays dead.
 
@@ -181,10 +205,12 @@ The `MockMailbox` lives in `FunctionalTestBase`; both test classes use it.
 in the admin area under *JUG Data*, to match the iframe-embedded pages to their own website.
 
 - **Only the participant pages get it, never the admin area.** A broken stylesheet must not break the
-  very form used to repair it. Implemented as **opt-in**: `template.html` has an `{#insert styles}{/}`
-  slot in `<head>` (behind Bootstrap, so the tenant's own rules win), and the eight participant
-  templates fill it with `{#styles}{#include tenantstyle.html/}{/styles}`. Opt-out would be shorter but
-  would silently colour any admin page added later.
+  very form used to repair it. Implemented as **opt-in through the layout**: `template.html` has an
+  `{#insert styles}{/}` slot in `<head>` (behind Bootstrap, so the tenant's own rules win), and
+  `public.html` -- the layout of every participant page -- is the only template that fills it with
+  `{#styles}{#include tenantstyle.html/}{/styles}`. The admin pages include `template.html` directly and
+  stay unstyled by design. Opt-out would be shorter but would silently colour any admin page added later;
+  it used to be opt-in per page, which meant every new participant page had to remember two lines.
 - It is supplied by **`TenantStyle`**, a `@Named("tenantStyle") @RequestScoped` bean like `CurrentUser`,
   reachable as `inject:tenantStyle.present` / `inject:tenantStyle.css`. Not template data, because
   `tenant` means two different things across the participant templates -- the bare id string in
@@ -223,10 +249,13 @@ least the viewport height, which would keep the iframe from ever shrinking again
 - Client ID: `registration`
 - Roles are sourced from the access token at `resource_access/registration/roles`
 - A role named exactly like the tenant ID grants admin access to that tenant
-- `admin/menu.html` binds `{#let nav=activeNav.or('')}` around the nav list. Qute renders strictly: a page
-  that simply omits `activeNav` from its template data would fail with a 500, not a blank highlight. The
-  binding lets the operator pages, which highlight no nav entry, leave it out.
-- **Every link in `admin/menu.html` is absolute (`/admin/{tenant.id}/...`), not relative.** The menu is
+- Which nav entry is highlighted travels as an include parameter: a page passes `nav="data"` to
+  `admin/layout.html`, which passes it on to the menu it includes. `admin/menu.html` binds
+  `{#let active=nav.or('')}` around the nav list, because Qute renders strictly and the two operator
+  pages highlight no entry at all -- without the default that would be a 500, not a blank highlight.
+  `AdminFunctionalTest.testTheCurrentPageIsHighlightedInTheMenu` pins the chain down: a break in it
+  leaves every entry unhighlighted instead of failing.
+- **Every link in `admin/menu.html` is absolute (`/admin/{inject:tenant.id}/...`), not relative.** The menu is
   included by pages at two path depths: `/admin/{tenant}/events` and `/admin/{tenant}/events/{eventId}`
   (`admin/list.html`). On the detail page a relative `./events` resolved against `/admin/{tenant}/events/`
   and ended up at `/admin/{tenant}/events/events` -- a 404 instead of navigation. The remaining admin
@@ -238,6 +267,13 @@ least the viewport height, which would keep the iframe from ever shrinking again
   `CurrentUser` is a `@Named @RequestScoped` bean; Qute resolves `inject:` namespace expressions against
   `@Named` beans and validates them at build time, which keeps the flag out of every single resource method.
   The endpoints stay guarded by `@RolesAllowed` — the hidden link is a courtesy, not a permission check.
+- **The admin chrome reads its own data, the resources pass only what their page shows.** Besides
+  `inject:currentUser` (admin flag, display name, gravatar URL) there is `inject:tenant`
+  (`CurrentTenant`, delegating to `TenantContext`) for the logo, the name and the tenant id in every
+  admin URL. Before, all of it was template data on every single resource method, where a forgotten
+  key surfaced as a 500 at render time. The participant pages still pass their own `tenant` data --
+  they render *for* a tenant instead of running inside one, and `tenant` means different things to
+  them (id string in `registration.html`/`thanks.html`, entity in the webinar pages).
 - Logout runs through `AdminLogoutResource` (`/admin/{tenant}/logout`), **not** through
   `quarkus.oidc.logout.path`: the built-in logout offers a single static `post-logout-path`, while the
   landing page has to carry the tenant. The resource assembles the RP-initiated logout request itself
