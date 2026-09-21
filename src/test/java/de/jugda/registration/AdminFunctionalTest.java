@@ -480,6 +480,31 @@ public class AdminFunctionalTest extends FunctionalTestBase {
             .body(containsString("Version " + version));
     }
 
+    // On the day of the event the page goes up before the link does. It used to answer 500 while the
+    // orga team had not pasted one yet -- on exactly the page participants were refreshing
+    @Test
+    void testMeetingPageSaysNotAvailableWhileNoLinkIsStored() {
+        try {
+            given().contentType(ContentType.JSON)
+                .pathParam("eventId", EVENT_ID)
+                .body("{\"meetingLink\" : \"\"}")
+                .put("/admin/" + TENANT + "/events/{eventId}/data")
+                .then().statusCode(204);
+
+            given()
+                .get("/meeting/" + TENANT + "/" + EVENT_ID)
+                .then()
+                .statusCode(200)
+                .body(containsString("noch nicht oder nicht mehr verf\u00fcgbar"));
+        } finally {
+            given().contentType(ContentType.JSON)
+                .pathParam("eventId", EVENT_ID)
+                .body("{\"meetingLink\" : \"https://example.com/meeting\"}")
+                .put("/admin/" + TENANT + "/events/{eventId}/data")
+                .then().statusCode(204);
+        }
+    }
+
     // Stores its own link: the page needs one, and relying on another test having uploaded it makes
     // this test depend on the order JUnit happens to run them in -- which changes with a method rename
     @Test
