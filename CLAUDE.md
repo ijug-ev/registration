@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Multi-tenant event registration application for JUG (Java User Group) events. Built on Quarkus 3.x / Java 21 / PostgreSQL. Designed to be embedded in an `<iframe>` on JUG websites.
+Multi-tenant event registration application for JUG (Java User Group) events. Built on Quarkus 3.x / Java 25 / PostgreSQL. Designed to be embedded in an `<iframe>` on JUG websites.
 
 Live URL pattern: `https://registration.ijug.eu`
 
@@ -26,6 +26,22 @@ Live URL pattern: `https://registration.ijug.eu`
 # Native build
 ./mvnw clean package -Pnative
 ```
+
+### Java Version
+
+The project tracks the **latest Java LTS** and nothing newer -- it belongs to a Java user group, so it
+should show the version people are expected to run in production (issue #54). Currently **Java 25**.
+
+Raising it means five places, not one: `maven.compiler.release` in `pom.xml`, the `java-version` of the
+four CI workflows (`.github/workflows/` **and** `.forgejo/workflows/` -- the project is mirrored to
+git.ijug.eu), the `ubi9/openjdk-<v>-runtime` base image in `src/main/docker/Dockerfile.jvm` and
+`Dockerfile.legacy-jar`, plus the prerequisite in `README.adoc`.
+
+Two things to know when the next LTS arrives:
+- Since JDK 23 javac no longer finds annotation processors on the classpath by itself, which silently
+  disables Lombok. `<proc>full</proc>` in the compiler plugin is what keeps it running -- do not drop it.
+- Lombok warns about `sun.misc.Unsafe::objectFieldOffset` on JDK 25. Harmless today, but that method is
+  slated for removal, so a future LTS will need a Lombok that has moved off it.
 
 ### Dev Mode URLs
 - Registration form: http://localhost:8080/registration/test?eventId=2026-12-31&opensBeforeInMonths=8

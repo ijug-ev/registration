@@ -13,7 +13,7 @@ link:docs/handbuch.adoc[docs/handbuch.adoc].
 
 === Prerequisites
 
-* JDK 21+
+* JDK 25+
 * IDE
 * Maven 3.9+ _(Maven wrapper is included)_
 * Docker (for local development using the Quarkus DevServices)
