@@ -62,7 +62,7 @@ creates the client role of the same name by hand.
 | `GET /registration/{tenant}/ical/{eventId}` | anonymous | Download `.ics` calendar file |
 | `GET /webinar/{tenant}/{eventId}` | anonymous | Webinar landing page (today-only in prod) |
 | `GET /admin/{tenant}/events` | OIDC | Admin overview of all events |
-| `GET /admin/{tenant}/events/{eventId}` | OIDC | List registrations for one event (HTML, or JSON with `Accept: application/json`) |
+| `GET /admin/{tenant}/events/{eventId}` | OIDC | List registrations for one event (HTML, or JSON with `Accept: application/json`) [^1] |
 | `GET/POST /admin/{tenant}/data` | OIDC | View and edit the tenant's master data |
 | `GET/POST /admin/{tenant}/content` | OIDC | View and edit the tenant's help texts (`Content`) |
 | `GET/POST /admin/{tenant}/tenants` | OIDC + role `admin` | Create a new JUG by cloning the `test` tenant |
@@ -70,6 +70,10 @@ creates the client role of the same name by hand.
 | `GET /admin/{tenant}/logs` | OIDC + role `admin` | Tail the server log |
 | `PUT /admin/{tenant}/events/{eventId}/data` | OIDC | Update event metadata |
 | `PUT /admin/{tenant}/events/{eventId}/message` | OIDC | Send bulk email to participants |
+
+[^1]: Two resource methods share that path. The JSON one carries `qs=0.9`, so a client that sends no
+`Accept` header gets the page -- without it the runtime picks whichever method it discovered first, which
+is not stable across JVM runs and failed the menu test in roughly one build in eight.
 
 ### Key Components
 
