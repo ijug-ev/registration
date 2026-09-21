@@ -1,0 +1,13 @@
+{!
+Layout of the two standalone webinar pages. Unlike the registration pages these are opened directly
+and not embedded, so they carry the JUG's logo header and a page title of their own.
+!}
+{#include public.html}
+{#title}{tenant.name} Event Information{/title}
+{#body}
+<div class="container">
+    {#include logoheader.html/}
+    {#insert content}No content!{/}
+</div>
+{/body}
+{/include}

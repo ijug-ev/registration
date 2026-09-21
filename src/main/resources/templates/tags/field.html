@@ -1,0 +1,18 @@
+{!
+One labelled row of an admin form: label on the left, input on the right, optional hint below.
+Templates in templates/tags are registered as tags automatically, so this is called as
+
+    {#field name="website" label="Website" type="url" value=form.website /}
+    {#field name="id" label="ID" value=newTenantId required=true autofocus=true}Hint text{/field}
+
+Only name and label are required. Everything else goes through .or(...) -- strict rendering fails
+on a key nobody supplied, so a caller that does not care about a parameter must be able to omit it.
+The same is true of the tag body: nested-content simply does not exist for a {#field ... /} call.
+!}
+<div class="mb-2 row">
+    <label for="{name}" class="col-3 col-form-label">{label}</label>
+    <div class="col-9">
+        <input type="{type.or('text')}" class="form-control" id="{name}" name="{name}" value="{value.or('')}"{#if required.or(false)} required{/if}{#if autofocus.or(false)} autofocus{/if}>
+        {#if nested-content??}<small class="form-text text-muted">{nested-content}</small>{/if}
+    </div>
+</div>
