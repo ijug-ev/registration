@@ -81,6 +81,18 @@ public class AdminFunctionalTest extends FunctionalTestBase {
             .statusCode(204);
     }
 
+    // A payload without recipients is a client mistake, not a server error -- it used to come back as
+    // a 500 from an IllegalArgumentException
+    @Test
+    void testBulkEmailWithoutRecipientsIsRejectedAsBadRequest() {
+        given().contentType(ContentType.JSON)
+            .pathParam("eventId", EVENT_ID)
+            .body("{\"subject\" : \"Test\", \"message\" : \"Hallo\"}")
+            .put("/admin/" + TENANT + "/events/{eventId}/message")
+            .then()
+            .statusCode(400);
+    }
+
     // With real recipients the mails go out in one batched send per chunk, not one at a time
     @Test
     void testBulkEmailReachesEverySelectedParticipant() {
