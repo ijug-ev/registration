@@ -22,6 +22,9 @@ import java.util.Map;
 @Produces(MediaType.TEXT_HTML)
 public class MeetingResource {
 
+    /** Key of the per-event meeting link in {@code event_data}, written by the admin event page. */
+    static final String MEETING_LINK = "meetingLink";
+
     @Inject
     EventService eventService;
     @Inject
@@ -39,18 +42,29 @@ public class MeetingResource {
     public TemplateInstance getMeeting(@PathParam("eventId") String eventId) {
         String today = LocalDate.now().format(DateTimeFormatter.ISO_DATE);
         if (!launchMode.isDevOrTest() && !eventId.equals(today)) {
-            return meetingNotAvailable.data("tenant", tenantCtx.getTenant());
+            return notAvailable();
+        }
+
+        Map<String, String> eventData = eventService.getEventData(eventId);
+        // The link is the whole page. Until the orga team pastes it in -- which happens on the day,
+        // sometimes minutes before the start -- there is nothing to show, and the handbuch has always
+        // promised "nicht verfügbar" for that. The page used to answer 500 instead, because Qute
+        // renders strictly and {eventData.meetingLink} has no key to resolve.
+        String meetingLink = eventData.get(MEETING_LINK);
+        if (meetingLink == null || meetingLink.isBlank()) {
+            return notAvailable();
         }
 
         return eventService.getEvent(eventId)
-            .map(event -> {
-                Map<String, String> eventData = eventService.getEventData(eventId);
-                return meeting.data("event", event)
-                    .data("tenant", tenantCtx.getTenant())
-                    .data("eventData", eventData)
-                    .data("helptext", Content.asMap());
-            })
-            .orElseGet(() -> meetingNotAvailable.data("tenant", tenantCtx.getTenant()));
+            .map(event -> meeting.data("event", event)
+                .data("tenant", tenantCtx.getTenant())
+                .data("eventData", eventData)
+                .data("helptext", Content.asMap()))
+            .orElseGet(this::notAvailable);
+    }
+
+    private TemplateInstance notAvailable() {
+        return meetingNotAvailable.data("tenant", tenantCtx.getTenant());
     }
 
 }
