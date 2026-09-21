@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
  * <p>
  * Named CDI bean rather than per-page template data on purpose: {@code tenant} means two different
  * things in the participant templates -- the bare id string in {@code registration.html} and the
- * {@link Tenant} entity in the webinar pages -- so there is no one expression every page could use.
+ * {@link Tenant} entity in the meeting pages -- so there is no one expression every page could use.
  * The bean also reaches the pages that pass no tenant at all ({@code delete.html}).
  * <p>
  * The CSS is rendered unescaped inside a {@code <style>} element, hence {@link RawString}. The one

@@ -18,39 +18,39 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
-@Path("webinar/{tenant}")
+@Path("meeting/{tenant}")
 @Produces(MediaType.TEXT_HTML)
-public class WebinarResource {
+public class MeetingResource {
 
     @Inject
     EventService eventService;
     @Inject
     LaunchMode launchMode;
-    @Location("webinar/webinar")
-    Template webinar;
-    @Location("webinar/notAvailable")
-    Template webinarNotAvailable;
+    @Location("meeting/meeting")
+    Template meeting;
+    @Location("meeting/notAvailable")
+    Template meetingNotAvailable;
 
     @Inject
     TenantContext tenantCtx;
 
     @GET
     @Path("{eventId}")
-    public TemplateInstance getWebinar(@PathParam("eventId") String eventId) {
+    public TemplateInstance getMeeting(@PathParam("eventId") String eventId) {
         String today = LocalDate.now().format(DateTimeFormatter.ISO_DATE);
         if (!launchMode.isDevOrTest() && !eventId.equals(today)) {
-            return webinarNotAvailable.data("tenant", tenantCtx.getTenant());
+            return meetingNotAvailable.data("tenant", tenantCtx.getTenant());
         }
 
         return eventService.getEvent(eventId)
             .map(event -> {
                 Map<String, String> eventData = eventService.getEventData(eventId);
-                return webinar.data("event", event)
+                return meeting.data("event", event)
                     .data("tenant", tenantCtx.getTenant())
                     .data("eventData", eventData)
                     .data("helptext", Content.asMap());
             })
-            .orElseGet(() -> webinarNotAvailable.data("tenant", tenantCtx.getTenant()));
+            .orElseGet(() -> meetingNotAvailable.data("tenant", tenantCtx.getTenant()));
     }
 
 }
