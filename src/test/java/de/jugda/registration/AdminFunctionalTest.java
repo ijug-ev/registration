@@ -138,6 +138,20 @@ public class AdminFunctionalTest extends FunctionalTestBase {
             .getString("find { it.email == '" + email + "' }.confirmationSentAt");
     }
 
+    // JUGs drop past events from their calendar feed, but the registrations stay. The page then has
+    // no event to show and used to print the developer placeholder "eventStartDate" into the heading
+    @Test
+    void testEventPageSurvivesAnEventThatIsNotInTheCalendarFeed() {
+        given().accept(ContentType.HTML)
+            .get("/admin/" + TENANT + "/events/1999-12-31")
+            .then()
+            .statusCode(200)
+            .body(containsString("Anmeldungen f\u00fcr Event am 1999-12-31"))
+            .body(containsString("Kalender-Feed"))
+            .body(not(containsString("eventStartDate")))
+            .body(not(containsString("eventSummary")));
+    }
+
     // The "Zum Online-Meeting" button needs the tenant in its path, otherwise it 404s
     @Test
     void testEventRegistrationsLinkToWebinarPageOfThisTenant() {
