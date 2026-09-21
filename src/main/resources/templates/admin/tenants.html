@@ -17,7 +17,7 @@
         <em>Texte</em> angepasst.
     </p>
 
-    <form method="post" action="/admin/{tenant.id}/tenants">
+    <form method="post" action="/admin/{inject:tenant.id}/tenants">
         {#field name="id" label="ID" value=newTenantId required=true autofocus=true}
             Kleinbuchstaben, Ziffern und Bindestriche, z.B. <code>jugda</code>. Die ID steht
             in allen URLs der JUG und muss genauso als Keycloak-Rolle vergeben werden.

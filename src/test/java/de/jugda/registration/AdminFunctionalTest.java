@@ -408,7 +408,17 @@ public class AdminFunctionalTest extends FunctionalTestBase {
         return "href=\"/admin/" + TENANT + "/" + page + "\"";
     }
 
-    // The operator pages highlight no nav entry and therefore pass no activeNav -- menu.html has to
+    // The nav entry of the page being shown is highlighted. The value travels from the page through
+    // admin/layout.html into the included menu -- a break in that chain leaves every entry unhighlighted
+    // instead of failing, so nothing but an assertion would notice
+    @Test
+    void testTheCurrentPageIsHighlightedInTheMenu() {
+        given().get("/admin/" + TENANT + "/content")
+            .then().statusCode(200)
+            .body(containsString(menuHref("content") + " class=\"nav-link active\""));
+    }
+
+    // The operator pages highlight no nav entry and therefore pass no nav parameter -- menu.html has to
     // tolerate that, and a missing key in a Qute expression is a 500, not a blank
     @Test
     @TestSecurity(user = "root", roles = {"test", "admin"})

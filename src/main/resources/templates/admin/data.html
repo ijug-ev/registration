@@ -1,10 +1,10 @@
-{#include admin/layout.html heading="JUG Daten"}
+{#include admin/layout.html nav="data" heading="JUG Daten"}
 {#content}
-    <form method="post" action="/admin/{tenant.id}/data">
+    <form method="post" action="/admin/{inject:tenant.id}/data">
         <div class="mb-2 row">
             <label class="col-3 col-form-label">ID</label>
             <div class="col-9">
-                <input type="text" class="form-control" value="{tenant.id}" readonly disabled>
+                <input type="text" class="form-control" value="{inject:tenant.id}" readonly disabled>
             </div>
         </div>
         {#field name="name" label="Name" value=form.name /}

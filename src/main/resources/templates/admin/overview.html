@@ -1,4 +1,4 @@
-{#include admin/layout.html heading="Event-Anmeldungen"}
+{#include admin/layout.html nav="events" heading="Event-Anmeldungen"}
 {#content}
     <table class="table table-striped">
         <thead>
@@ -10,7 +10,7 @@
         <tbody>
         {#for event in events}
             <tr>
-                <td><a href="/admin/{tenant.id}/events/{event.key}">{event.key}</a></td>
+                <td><a href="/admin/{inject:tenant.id}/events/{event.key}">{event.key}</a></td>
                 <td>{event.value}</td>
             </tr>
         {/for}

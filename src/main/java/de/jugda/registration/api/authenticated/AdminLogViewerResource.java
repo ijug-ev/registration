@@ -1,7 +1,6 @@
 package de.jugda.registration.api.authenticated;
 
 import de.jugda.registration.TenantContext;
-import io.quarkus.oidc.IdToken;
 import io.quarkus.qute.Location;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
@@ -13,7 +12,6 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.eclipse.microprofile.jwt.JsonWebToken;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -27,22 +25,13 @@ public class AdminLogViewerResource {
     @ConfigProperty(name = "quarkus.log.file.path", defaultValue = "data/app.log")
     String logFilePath;
 
-    @Inject
-    TenantContext tenantCtx;
-
-    @Inject
-    @IdToken
-    JsonWebToken idToken;
-
     @Location("admin/logs")
     Template logsTemplate;
 
     @GET
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance logsPage() {
-        return logsTemplate
-            .data("tenant", tenantCtx.getTenant())
-            .data("id", idToken);
+        return logsTemplate.instance();
     }
 
     @GET

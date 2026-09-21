@@ -4,7 +4,6 @@ import de.jugda.registration.TenantContext;
 import de.jugda.registration.TenantStyle;
 import de.jugda.registration.domain.Tenant;
 import de.jugda.registration.model.TenantForm;
-import io.quarkus.oidc.IdToken;
 import io.quarkus.qute.Location;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
@@ -21,7 +20,6 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
-import org.eclipse.microprofile.jwt.JsonWebToken;
 
 @Path("admin/{tenant}/data")
 @Produces(MediaType.TEXT_HTML)
@@ -33,10 +31,6 @@ public class AdminTenantResource {
 
     @Inject
     TenantContext tenantCtx;
-
-    @Inject
-    @IdToken
-    JsonWebToken idToken;
 
     @Context
     UriInfo uriInfo;
@@ -78,10 +72,7 @@ public class AdminTenantResource {
 
     private TemplateInstance page(TenantForm form, String error) {
         return data
-            .data("tenant", tenantCtx.getTenant())
             .data("form", form)
-            .data("id", idToken)
-            .data("error", error)
-            .data("activeNav", "data");
+            .data("error", error);
     }
 }

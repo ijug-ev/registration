@@ -1,9 +1,9 @@
-{#include admin/layout.html}
+{#include admin/layout.html nav="events"}
 {#heading}
     <div class="d-flex justify-content-between align-items-center">
         <h2 class="fw-light my-3">Anmeldungen für Event am {event.startDate ?: 'eventStartDate‚∑'}: {registrations.size}</h2>
         {#if eventData.get('webinarLink')??}
-        <a href="/webinar/{tenant.id}/{eventId}" target="_blank" class="btn btn-primary">Zum Online-Meeting</a>
+        <a href="/webinar/{inject:tenant.id}/{eventId}" target="_blank" class="btn btn-primary">Zum Online-Meeting</a>
         {/if}
     </div>
     <h3 class="fw-light my-3"><a href="{event.url ?: '#'}" target="_blank">{event.summary ?: 'eventSummary'}</a></h3>
@@ -78,7 +78,7 @@
             <form onsubmit="return sendMail()">
                 <div class="mb-2">
                     <label for="subject" class="form-label">Betreff</label>
-                    <input type="text" class="form-control" id="subject" value="Link zum Online-Vortrag der {tenant.name} heute Abend">
+                    <input type="text" class="form-control" id="subject" value="Link zum Online-Vortrag der {inject:tenant.name} heute Abend">
                 </div>
                 <div class="mb-2">
                     <label for="message" class="form-label">Nachricht</label>
@@ -86,12 +86,12 @@
 
         Du hast Dich für unseren heutigen Online-Vortrag angemeldet. Den Link zur Einwahl und weitere Informationen findest Du hier:
 
-        {baseUrl}webinar/{tenant.id}/{eventId}
+        {baseUrl}webinar/{inject:tenant.id}/{eventId}
 
         Bis heute Abend, wir freuen uns auf Dein Kommen. Im Anschluss an den Vortrag kannst Du übrigens gern noch bei unserem virtuellen Stammtisch mitplaudern oder einfach nur zuhören.
 
         Viele Grüße
-        Dein {tenant.name} Orga-Team</textarea>
+        Dein {inject:tenant.name} Orga-Team</textarea>
                 </div>
                 <button type="submit" class="btn btn-info">Senden</button>
             </form>
@@ -124,7 +124,7 @@
         if (confirm('Delete registration of ' + name + '?')) {
             console.log('deleting registration', id);
             $.ajax({
-                url: '/registration/{tenant.id}/delete?id=' + id,
+                url: '/registration/{inject:tenant.id}/delete?id=' + id,
                 type: 'DELETE',
                 cookies: true,
             }).done(function () {

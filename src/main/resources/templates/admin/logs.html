@@ -19,7 +19,7 @@
 
     async function fetchLogs() {
         const lines = linesInput.value || 500;
-        const res = await fetch('/admin/{tenant.id}/logs/tail?lines=' + lines);
+        const res = await fetch('/admin/{inject:tenant.id}/logs/tail?lines=' + lines);
         const text = await res.text();
         const atBottom = logEl.scrollTop + logEl.clientHeight >= logEl.scrollHeight - 20;
         logEl.innerHTML = text.split('\n').map(escapeAndColor).join('\n');
