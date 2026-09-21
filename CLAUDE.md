@@ -76,7 +76,7 @@ creates the client role of the same name by hand.
 | `GET/POST /registration/{tenant}/delete` | anonymous | Self-service deregistration |
 | `DELETE /registration/{tenant}/delete?id=` | anonymous | Delete one registration by UUID (used by the admin UI and the mail link) |
 | `GET /registration/{tenant}/ical/{eventId}` | anonymous | Download `.ics` calendar file |
-| `GET /webinar/{tenant}/{eventId}` | anonymous | Webinar landing page (today-only in prod) |
+| `GET /meeting/{tenant}/{eventId}` | anonymous | Meeting landing page (today-only in prod, and only once a `meetingLink` is stored) |
 | `GET /admin/{tenant}/events` | OIDC | Admin overview of all events |
 | `GET /admin/{tenant}/events/{eventId}` | OIDC | List registrations for one event (HTML, or JSON with `Accept: application/json`) [^1] |
 | `GET/POST /admin/{tenant}/data` | OIDC | View and edit the tenant's master data |
@@ -120,7 +120,7 @@ script slot, the height reporter). Above it sit two layouts, and a page includes
 | Layout | Used by | Adds |
 |---|---|---|
 | `public.html` | the 6 registration/deregistration pages | the tenant's own stylesheet |
-| `webinar/layout.html` (on `public.html`) | the 2 webinar pages | container, logo header, page title |
+| `meeting/layout.html` (on `public.html`) | the 2 meeting pages | container, logo header, page title |
 | `admin/layout.html` | the 6 admin pages | container, menu, content column, heading, error alert |
 
 A page fills `{#content}` (`{#body}` on the participant pages, which *are* the body) and passes what the
@@ -239,7 +239,7 @@ in the admin area under *JUG Data*, to match the iframe-embedded pages to their 
 - It is supplied by **`TenantStyle`**, a `@Named("tenantStyle") @RequestScoped` bean like `CurrentUser`,
   reachable as `inject:tenantStyle.present` / `inject:tenantStyle.css`. Not template data, because
   `tenant` means two different things across the participant templates -- the bare id string in
-  `registration.html`/`thanks.html`, the `Tenant` entity in the webinar pages -- and `delete.html` gets
+  `registration.html`/`thanks.html`, the `Tenant` entity in the meeting pages -- and `delete.html` gets
   no tenant at all. The bean loads the entity lazily during rendering; that works, the request context
   and the Hibernate session are still around at that point.
 - `getCss()` deliberately returns a `RawString`: the CSS lands unescaped inside a `<style>` element.
@@ -298,7 +298,7 @@ least the viewport height, which would keep the iframe from ever shrinking again
   admin URL. Before, all of it was template data on every single resource method, where a forgotten
   key surfaced as a 500 at render time. The participant pages still pass their own `tenant` data --
   they render *for* a tenant instead of running inside one, and `tenant` means different things to
-  them (id string in `registration.html`/`thanks.html`, entity in the webinar pages).
+  them (id string in `registration.html`/`thanks.html`, entity in the meeting pages).
 - Logout runs through `AdminLogoutResource` (`/admin/{tenant}/logout`), **not** through
   `quarkus.oidc.logout.path`: the built-in logout offers a single static `post-logout-path`, while the
   landing page has to carry the tenant. The resource assembles the RP-initiated logout request itself
