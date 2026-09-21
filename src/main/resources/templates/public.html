@@ -1,0 +1,15 @@
+{!
+Layout of every participant-facing page (registration, deregistration, webinar). Its whole job is
+to bind the tenant's own stylesheet to the page: the JUGs maintain it in the admin area and it must
+reach the iframe-embedded pages -- but never the admin area itself, because a broken stylesheet must
+not break the form used to repair it. That is why this is a separate layout on top of template.html
+and not a section of it: the admin pages include template.html directly and stay unstyled by design.
+
+A page fills {#body} and, if it needs one, {#scripts}; both are passed through to template.html
+unchanged, as is {#title}.
+!}
+{#include template.html}
+{#styles}{#include tenantstyle.html/}{/styles}
+{#body}{#insert body}No body!{/}{/body}
+{#scripts}{#insert scripts}{/}{/scripts}
+{/include}
