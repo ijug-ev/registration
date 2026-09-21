@@ -62,7 +62,7 @@ bestehende Seite eingebettet – typischerweise in die Detailseite einer Veranst
 |offen
 |Kalenderdatei (`.ics`) zur Veranstaltung
 
-|`/webinar/{mandant}/{eventId}`
+|`/meeting/{mandant}/{eventId}`
 |offen
 |Landingpage mit dem Einwahllink für Online-Events
 
@@ -366,7 +366,7 @@ Beschreibung aus einer JSON-Datei, die auf der Website der JUG liegt. Deren Adre
 im Admin-Bereich unter <<_jug_data_stammdaten>>.
 
 Diese Daten braucht die App für die Betreffzeilen und Texte der E-Mails, für die
-Kalenderdatei, für die Webinar-Seite und für die Anzeige im Admin-Bereich.
+Kalenderdatei, für die Meeting-Seite und für die Anzeige im Admin-Bereich.
 
 [NOTE]
 ====
@@ -489,19 +489,19 @@ So wird sie eingerichtet:
 
 . In der Events-Datei bei `location` den Wert `Online` (oder `Virtuell`) eintragen.
 . Im Admin-Bereich auf der Detailseite des Events unter *Zusätzliche Event-Daten* den
-  Webinar-Link hinterlegen.
-. Fertig – die Seite ist unter `/webinar/{mandant}/{eventId}` erreichbar und zeigt Titel,
+  Meeting-Link hinterlegen.
+. Fertig – die Seite ist unter `/meeting/{mandant}/{eventId}` erreichbar und zeigt Titel,
   Uhrzeit, den Einwahl-Button und den Hinweistext zu den eingesetzten Werkzeugen.
 
 [IMPORTANT]
 ====
-Die Webinar-Seite ist *nur am Tag der Veranstaltung* erreichbar. An allen anderen Tagen
+Die Meeting-Seite ist *nur am Tag der Veranstaltung* erreichbar. An allen anderen Tagen
 erscheint ein Hinweis, dass die Seite nicht verfügbar ist. Das ist Absicht – der Link kann
 gefahrlos vorab verschickt werden.
 ====
 
 Steht `location` auf `Online` oder `Virtuell`, trägt außerdem die Kalenderdatei nicht den
-Ort, sondern die Adresse dieser Webinar-Seite als Ort und Link ein. Teilnehmer kommen dann
+Ort, sondern die Adresse dieser Meeting-Seite als Ort und Link ein. Teilnehmer kommen dann
 direkt aus ihrem Kalendereintrag zur Einwahl.
 
 == Der Admin-Bereich
@@ -525,7 +525,7 @@ Arbeit:
 
 * *Events / Registrierungen* – Anmeldungen ansehen und verwalten
 * *JUG Data* – Stammdaten der JUG
-* *Texte* – die Hilfetexte am Anmeldeformular und auf der Webinar-Seite
+* *Texte* – die Hilfetexte am Anmeldeformular und auf der Meeting-Seite
 
 Ganz unten in der Leiste steht der eigene Name. Das Klappmenü dahinter führt zum Logout und,
 nur bei Konten mit der zusätzlichen Rolle `admin`, zu den beiden Betreiber-Seiten
@@ -548,7 +548,7 @@ der Zeit von selbst aus der Liste.
 === Teilnehmerliste eines Events
 
 Oben stehen Datum, Titel und die Gesamtzahl der Anmeldungen; der Titel verlinkt auf die
-Veranstaltungsseite. Ist ein Webinar-Link hinterlegt, erscheint zusätzlich der Button
+Veranstaltungsseite. Ist ein Meeting-Link hinterlegt, erscheint zusätzlich der Button
 *Zum Online-Meeting*.
 
 Die Tabelle zeigt pro Anmeldung:
@@ -607,7 +607,7 @@ Teilnehmerlisten, Verlosungen oder den Einlass.
 
 ==== Zusätzliche Event-Daten
 
-Hier wird der *Webinar-Link* für Online-Veranstaltungen hinterlegt und mit *Speichern*
+Hier wird der *Meeting-Link* für Online-Veranstaltungen hinterlegt und mit *Speichern*
 gesichert. Eine Bestätigung meldet den Erfolg.
 
 ==== Schreibe E-Mail an Teilnehmer
@@ -651,7 +651,7 @@ Ein Beispiel:
 Hallo {{name}}!
 
 der Link zur Einwahl für heute Abend:
-{{baseUrl}}webinar/jugda/{{eventId}}
+{{baseUrl}}meeting/jugda/{{eventId}}
 
 Viele Grüße
 Dein {{tenant.name}} Orga-Team
@@ -721,7 +721,7 @@ h3 { color: #005f73; }
 Ein paar Punkte dazu:
 
 * Das Stylesheet wirkt *nur auf die Teilnehmer-Seiten*: Anmeldung, Danke-Seite, Abmeldung,
-  „Anmeldung geschlossen", „Anmeldung noch nicht offen" und die Webinar-Seite. Der Admin-Bereich
+  „Anmeldung geschlossen", „Anmeldung noch nicht offen" und die Meeting-Seite. Der Admin-Bereich
   bleibt bewusst unberührt – ein missglücktes Stylesheet soll nicht ausgerechnet das Formular
   unbedienbar machen, in dem man es wieder repariert. Zum Ausprobieren also immer die
   Anmeldeseite selbst aufrufen.
@@ -740,7 +740,7 @@ Stylesheet. Bei größeren Anpassungen lohnt sich eine Kopie außerhalb der Anwe
 
 === Texte (Hilfetexte)
 
-Hier stehen die erklärenden Texte, die auf dem Anmeldeformular und auf der Webinar-Seite
+Hier stehen die erklärenden Texte, die auf dem Anmeldeformular und auf der Meeting-Seite
 erscheinen – dieselben Schlüssel wie unter <<_hilfetexte_anpassen>>. Jedes Feld zeigt seinen
 Schlüssel und einen Hinweis, wo der Text auftaucht.
 
@@ -848,8 +848,8 @@ anpassbar:
 |`registration.waitlist`
 |Text im Wartelisten-Modus
 
-|`webinar.tools`
-|Hinweis zu den eingesetzten Konferenzwerkzeugen auf der Webinar-Seite
+|`meeting.tools`
+|Hinweis zu den eingesetzten Konferenzwerkzeugen auf der Meeting-Seite
 |===
 
 Bearbeitet werden diese Texte im Admin-Bereich unter *Texte*, siehe
@@ -882,8 +882,8 @@ mit dem Datum überein, siehe <<_die_events_datei>>.
 |Im Admin-Bereich erscheint „No access to tenant"
 |Dem Konto fehlt im Keycloak die Rolle mit dem Namen der Mandanten-ID.
 
-|Die Webinar-Seite meldet „nicht verfügbar"
-|Sie ist nur am Tag der Veranstaltung erreichbar. Andernfalls fehlt der Webinar-Link oder
+|Die Meeting-Seite meldet „nicht verfügbar"
+|Sie ist nur am Tag der Veranstaltung erreichbar. Andernfalls fehlt der Meeting-Link oder
 die Veranstaltung steht nicht in der Events-Datei.
 
 |Das eingebettete Formular hat eine eigene Scrollleiste
