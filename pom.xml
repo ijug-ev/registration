@@ -86,6 +86,10 @@
       <artifactId>quarkus-scheduler</artifactId>
     </dependency>
     <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-smallrye-health</artifactId>
+    </dependency>
+    <dependency>
       <groupId>io.quarkiverse.mailpit</groupId>
       <artifactId>quarkus-mailpit</artifactId>
       <version>2.1.2</version>

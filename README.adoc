@@ -36,6 +36,7 @@ TIP: You can now change classes, configurations and other resources on the fly, 
 * Registration: http://localhost:8080/registration/test?eventId=2026-12-31&opensBeforeInMonths=8
 * Admin: http://localhost:8080/admin/test/events (User: alice/alice)
 * Mailpit: http://localhost:8080/q/dev-ui/quarkus-mailpit/mailpit-ui
+* Health: http://localhost:8080/q/health
 
 For runnint http requests manually, see link:misc/run-http-requests-manually.adoc[here].
 
@@ -58,3 +59,14 @@ include::docker-compose.yml[]
 ----
 
 TIP: The production app should be available directly under https://registration.ijug.eu
+
+== Monitoring
+
+The app exposes the standard MicroProfile Health endpoints, unauthenticated, on the regular port:
+
+* `/q/health/live` -- the process is alive
+* `/q/health/ready` -- alive *and* the database is reachable
+* `/q/health/started` -- startup has finished
+* `/q/health` -- all of the above in one response
+
+An uptime monitor should poll `/q/health/ready`; that is also what the Docker Compose healthcheck above uses.
