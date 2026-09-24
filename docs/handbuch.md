@@ -1,0 +1,682 @@
+# Handbuch: Event-Anmeldung einbinden und verwalten
+
+Dieses Handbuch richtet sich an alle, die die Anmelde-App auf der eigenen JUG-Website
+einsetzen und betreuen: Es beschreibt, wie das Anmeldeformular in eine bestehende Seite
+eingebunden wird, wie die Veranstaltungsdaten dorthin kommen und was im Admin-Bereich
+möglich ist.
+
+Es sind keine Java-Kenntnisse nötig. Wer eine Seite bearbeiten und ein
+`<iframe>`-Element einfügen kann, kann die App einbinden. Für den Betrieb und die
+Weiterentwicklung der App selbst siehe stattdessen die [README](../README.adoc).
+
+## Überblick
+
+Die Anmelde-App ist ein zentraler Dienst, den sich mehrere JUGs teilen. Sie läuft unter
+
+```
+https://registration.ijug.eu
+```
+
+Jede JUG ist dort ein eigener **Mandant** und hat eine eigene **Mandanten-ID**
+(z.B. `jugda` oder `cyberland`). Diese ID steht in jeder Adresse der App und sorgt dafür,
+dass jede JUG ausschließlich ihre eigenen Anmeldungen, Texte und Einstellungen sieht.
+In diesem Handbuch steht überall `{mandant}` als Platzhalter dafür.
+
+Die App wird **nicht** als eigene Website betrieben, sondern als `<iframe>` in eine
+bestehende Seite eingebettet – typischerweise in die Detailseite einer Veranstaltung.
+
+### Ablauf einer Anmeldung
+
+1. Ein Interessent öffnet die Veranstaltungsseite der JUG und sieht dort das eingebettete Formular.
+2. Er trägt Name und E-Mail ein, bestätigt die Pflicht-Hinweise und schickt das Formular ab.
+3. Die Anmeldung wird gespeichert; sind alle Plätze belegt, landet er automatisch auf der Warteliste.
+4. Er bekommt eine Bestätigungsmail mit Kalendereintrag und einem persönlichen Abmeldelink.
+5. Das Orga-Team sieht die Anmeldung im Admin-Bereich und kann von dort Rundmails verschicken.
+6. Rund eine Woche nach der Veranstaltung werden die Anmeldedaten automatisch gelöscht.
+
+### Alle Adressen auf einen Blick
+
+| Adresse | Zugang | Zweck |
+| --- | --- | --- |
+| `/registration/{mandant}?eventId=…` | offen | Anmeldeformular – **das ist die Seite, die eingebettet wird** |
+| `/registration/{mandant}/delete?eventId=…` | offen | Abmeldeformular (Selbstbedienung über E-Mail-Adresse) |
+| `/registration/{mandant}/delete?id=…` | offen | Direkte Abmeldung über den persönlichen Link aus der Bestätigungsmail |
+| `/registration/{mandant}/ical/{eventId}` | offen | Kalenderdatei (`.ics`) zur Veranstaltung |
+| `/meeting/{mandant}/{eventId}` | offen | Landingpage mit dem Einwahllink für Online-Events |
+| `/admin/{mandant}/events` | Login | Admin: Übersicht aller Events mit Anmeldezahlen |
+| `/admin/{mandant}/events/{eventId}` | Login | Admin: Teilnehmerliste eines Events |
+| `/admin/{mandant}/data` | Login | Admin: Stammdaten der JUG (inkl. eigenem CSS) |
+| `/admin/{mandant}/logs` | Login + Rolle `admin` | Admin: Protokoll des Servers |
+| `/admin/{mandant}/logout` | Login | Abmelden – auch im Keycloak – und zurück zum Admin-Bereich der JUG |
+
+## Voraussetzungen
+
+Bevor eingebunden werden kann, müssen drei Dinge einmalig vorhanden sein. Punkt 1 und 3
+richtet der Betreiber der App (iJUG) ein, Punkt 2 liegt in der Hand der JUG:
+
+1. **Mandant angelegt** – die Mandanten-ID und ein Datenbankeintrag für die JUG.
+2. **Events-Datei erreichbar** – eine JSON-Datei mit den Veranstaltungsdaten auf der
+  eigenen Website, siehe [_die_events_datei](#_die_events_datei).
+3. **Benutzerkonto mit passender Rolle** – im Keycloak unter `https://id.ijug.eu/realms/ijug`.
+  Wer den Admin-Bereich eines Mandanten nutzen soll, braucht im Client `registration`
+  eine Rolle, die **exakt so heißt wie die Mandanten-ID**. Wer die Rolle `jugda` hat, kommt
+  an `/admin/jugda/…` – und an nichts anderes.
+
+**💡 TIP**\
+Wer mehrere JUGs betreut, bekommt einfach mehrere Rollen und kann mit demselben
+Konto zwischen den Admin-Bereichen wechseln.
+
+## Das Anmeldeformular einbinden
+
+### Das Grundgerüst
+
+Auf der Veranstaltungsseite wird ein `<iframe>` eingefügt, das auf die Anmeldeseite zeigt:
+
+```html
+<iframe
+    src="https://registration.ijug.eu/registration/jugda?eventId=2026-11-19"
+    title="Anmeldung zur Veranstaltung"
+    width="100%"
+    height="850"
+    style="border: 0;"
+    loading="lazy">
+</iframe>
+```
+
+Mehr ist für den Normalfall nicht nötig. Wichtig ist allein der Parameter `eventId`.
+
+### eventId: das Datum ist der Schlüssel
+
+Jede Veranstaltung wird über ihr **Datum im Format `JJJJ-MM-TT`** identifiziert – das ist
+die `eventId`. Eine Veranstaltung am 19. November 2026 hat also die `eventId` `2026-11-19`.
+
+<dl><dt><strong>⚠️ WARNING</strong></dt><dd>
+
+Die `eventId` muss ein gültiges Datum in genau diesem Format sein. Freitext wie
+`herbst-meetup` oder ein anderes Datumsformat wie `19.11.2026` führt zu einer Fehlerseite.
+
+Daraus folgt auch: **pro Tag kann es nur eine Veranstaltung geben.** Zwei Events am selben
+Tag teilen sich sonst dieselbe Teilnehmerliste.
+</dd></dl>
+
+### Die Höhe des iframes
+
+Ein `<iframe>` wächst nicht von allein mit seinem Inhalt mit, und die umgebende Seite darf
+die Höhe des Inhalts auch nicht einfach auslesen – das verbietet der Browser, weil die
+Anmelde-App auf einer anderen Domain liegt als die JUG-Website.
+
+Deshalb gilt zunächst die im `height`-Attribut eingetragene feste Höhe. Als Ausgangspunkt
+haben sich rund `850` Pixel bewährt. Der tatsächliche Bedarf hängt davon ab, wie viele
+Optionen aktiviert sind (jede zusätzliche Checkbox kostet Platz) und wie lang die eigenen
+Hilfetexte sind. Zu prüfen ist das am besten einmal am Desktop und einmal auf dem Handy, wo
+die Texte deutlich mehr Zeilen umbrechen.
+
+**💡 TIP**\
+Lieber etwas zu großzügig als zu knapp: Ist das iframe zu niedrig, bekommt es eine
+eigene Scrollleiste, was auf Mobilgeräten unangenehm zu bedienen ist.
+
+#### Automatisch mitwachsen lassen
+
+Wer die feste Höhe loswerden möchte, kann das iframe automatisch nachführen lassen. Die App
+schickt ihre Inhaltshöhe von sich aus nach außen – es fehlt nur noch ein kleiner
+Empfänger auf der eigenen Seite:
+
+```html
+<iframe id="anmeldung"
+    src="https://registration.ijug.eu/registration/jugda?eventId=2026-11-19"
+    title="Anmeldung zur Veranstaltung"
+    width="100%"
+    height="850"
+    style="border: 0;"
+    loading="lazy">
+</iframe>
+
+<script>
+  window.addEventListener('message', function (event) {
+    if (event.origin !== 'https://registration.ijug.eu') return;
+    if (!event.data || event.data.type !== 'ijug-registration:height') return;
+    document.getElementById('anmeldung').style.height = event.data.height + 'px';
+  });
+</script>
+```
+
+Das war’s. Die Höhe wird beim Laden gesetzt und danach bei jeder Änderung nachgeführt –
+etwa wenn eine Fehlermeldung erscheint oder die Danke-Seite angezeigt wird.
+
+<dl><dt><strong>❗ IMPORTANT: Die Herkunftsprüfung nicht weglassen</strong></dt><dd>
+
+Die Zeile mit `event.origin` ist kein Beiwerk. Ohne sie kann **jede beliebige** Seite, die
+irgendwo im Spiel ist, Nachrichten schicken und die Höhe des iframes manipulieren. Sie
+gehört genau so in den Code.
+</dd></dl>
+
+**💡 TIP**\
+Das `height`-Attribut bitte trotzdem stehen lassen. Es ist die Höhe, die bis zur
+ersten Meldung gilt, und die Rückfallebene, falls jemand JavaScript abgeschaltet hat.
+
+Wer **mehrere** Anmeldeformulare auf einer Seite einbettet, unterscheidet sie über den
+Absender der Nachricht, statt eine feste ID zu verwenden:
+
+```js
+document.querySelectorAll('iframe').forEach(function (frame) {
+  if (frame.contentWindow === event.source) {
+    frame.style.height = event.data.height + 'px';
+  }
+});
+```
+
+### Alle Parameter im Überblick
+
+Alle Parameter außer `eventId` sind optional.
+
+| Parameter | Standard | Bedeutung |
+| --- | --- | --- |
+| `eventId` | – _(Pflicht)_ | Datum der Veranstaltung als `JJJJ-MM-TT`. |
+| `limit` | `60` | Anzahl der Plätze. Ab dieser Zahl an Anmeldungen landen weitere Anmeldungen automatisch auf der Warteliste. |
+| `opensBeforeInMonths` | `1` | Wie viele Monate vor der Veranstaltung die Anmeldung öffnet. Vorher erscheint ein Hinweis mit dem Starttermin. |
+| `deadline` | Veranstaltungstag, 18:00 Uhr | Zeitpunkt, zu dem die Anmeldung schließt, als Zeitstempel (`2026-11-19T18:00:00+02:00`). Danach erscheint ein Hinweis, dass die Frist abgelaufen ist. |
+| `showPub` | `false` | Bei `true` erscheint die Checkbox „Ja, ich komme mit zum Stammtisch". |
+| `hybrid` | `false` | Bei `true` erscheint die Checkbox „Ich nehme nur Online/Remote teil". |
+| `showVideoRecording` | `false` | Bei `true` erscheint die Pflicht-Checkbox zur Videoaufzeichnung – nur für Veranstaltungen, die tatsächlich aufgezeichnet werden. |
+
+### Welche Seite wann erscheint
+
+Unter derselben Adresse zeigt die App je nach Zeitpunkt drei verschiedene Inhalte. Das
+Einbinden ist also eine einmalige Sache – die Seite muss über den Lebenszyklus der
+Veranstaltung hinweg nicht angefasst werden:
+
+| Zeitraum | Anzeige |
+| --- | --- |
+| Vor dem Anmeldestart | „Für diese Veranstaltung startet die Anmeldung erst am …" |
+| Zwischen Anmeldestart und Frist | Das Anmeldeformular – bzw. die Warteliste, sobald `limit` erreicht ist |
+| Nach der Frist | „Für diese Veranstaltung ist die Anmeldefrist leider schon abgelaufen." |
+
+### Beispiele
+
+Standard-Abendveranstaltung mit 60 Plätzen, Anmeldung ab einem Monat vorher:
+
+```
+/registration/jugda?eventId=2026-11-19
+```
+
+Kleiner Workshop mit 25 Plätzen, Anmeldung ab drei Monaten vorher, mit Aufzeichnung:
+
+```
+/registration/jugda?eventId=2026-11-19&limit=25&opensBeforeInMonths=3&showVideoRecording=true
+```
+
+Hybride Veranstaltung mit anschließendem Stammtisch, Anmeldeschluss am Vortag um Mitternacht:
+
+```
+/registration/jugda?eventId=2026-11-19&hybrid=true&showPub=true&deadline=2026-11-18T23:59:59+01:00
+```
+
+**🔥 CAUTION**\
+Die Zeitzone im `deadline` muss von Hand gepflegt werden: `+01:00` in der
+Winterzeit, `+02:00` in der Sommerzeit.
+
+### Was der Teilnehmer ausfüllt
+
+| Feld | Pflicht | Anmerkung |
+| --- | --- | --- |
+| Name | ja | Wird in der Teilnehmerliste angezeigt. |
+| E-Mail | ja | Dient als eindeutiges Kennzeichen der Anmeldung und als Adresse für Bestätigung und Rundmails. |
+| Stammtisch | nein | Nur bei `showPub=true`. |
+| Online/Remote | nein | Nur bei `hybrid=true`. |
+| Videoaufzeichnung | ja | Nur bei `showVideoRecording=true`. |
+| Datenschutzhinweis | ja | Immer vorhanden. |
+
+Der Absenden-Button bleibt so lange ausgegraut, bis alle Pflicht-Checkboxen angehakt sind.
+
+**📌 NOTE**\
+Meldet sich jemand mit **derselben E-Mail-Adresse** erneut für dieselbe Veranstaltung
+an, wird die bestehende Anmeldung aktualisiert statt eine zweite anzulegen – es gibt also
+keine Doppeleinträge. Der Wartelistenstatus bleibt dabei unverändert, und es geht erneut
+eine Bestätigungsmail raus.
+
+### Warteliste
+
+Sobald so viele Anmeldungen vorliegen, wie `limit` erlaubt, wechselt das Formular in den
+Wartelisten-Modus: Die Überschrift lautet „Warteliste", und ein Hinweistext erklärt die
+Lage. Angemeldet wird trotzdem, nur eben mit gesetztem Wartelisten-Kennzeichen.
+
+Das Nachrücken passiert **automatisch**: Meldet sich ein regulärer Teilnehmer ab, rückt die
+Person nach, die am längsten auf der Warteliste steht, und bekommt sofort eine E-Mail
+darüber. Es ist also kein manuelles Nachpflegen nötig.
+
+**❗ IMPORTANT**\
+Das Nachrücken wird nur ausgelöst, wenn sich ein **regulärer** Teilnehmer
+abmeldet. Meldet sich jemand von der Warteliste ab, ändert sich für die anderen nichts –
+was richtig ist, denn es wurde ja kein Platz frei.
+
+### Abmeldung
+
+Es gibt zwei Wege, und beide funktionieren ohne Login:
+
+**Persönlicher Link:** In jeder Bestätigungsmail steht ein Abmeldelink mit einer eindeutigen
+Kennung. Ein Klick genügt, es folgt keine weitere Rückfrage.
+
+**Abmeldeformular:** Unter dem Anmeldeformular steht ein kleiner Link „Dann klicke hier",
+der auf `/registration/{mandant}/delete?eventId=…` führt. Dort werden Veranstaltung und
+E-Mail-Adresse eingegeben. Wer diesen Weg separat verlinken möchte, kann die Adresse auch
+direkt einbetten.
+
+## Die Events-Datei
+
+### Wozu sie da ist
+
+Die App speichert Veranstaltungsdaten nicht selbst. Sie liest Titel, Uhrzeit, Ort und
+Beschreibung aus einer JSON-Datei, die auf der Website der JUG liegt. Deren Adresse steht
+im Admin-Bereich unter [JUG Data (Stammdaten)](#jug-data-stammdaten).
+
+Diese Daten braucht die App für die Betreffzeilen und Texte der E-Mails, für die
+Kalenderdatei, für die Meeting-Seite und für die Anzeige im Admin-Bereich.
+
+<dl><dt><strong>📌 NOTE</strong></dt><dd>
+
+Das Anmeldeformular selbst funktioniert auch **ohne** passenden Eintrag in der Events-Datei.
+Fehlt der Eintrag, fallen lediglich die Veranstaltungsdetails weg: Die Bestätigungsmail
+trägt dann nur „Anmeldebestätigung" im Betreff, ohne Titel und Datum. Es lohnt sich also,
+die Datei gepflegt zu halten – ein Fehler dort legt aber nicht die Anmeldung lahm.
+</dd></dl>
+
+### Aufbau
+
+Die Datei enthält eine Liste von Veranstaltungen:
+
+```json
+[
+  {
+    "uid": "20261119@jugda",
+    "summary": "Moderne Java-Anwendungen (Jane Doe)",
+    "title": "Moderne Java-Anwendungen",
+    "description": "Ein Abend über …",
+    "speaker": "Jane Doe",
+    "location": "Online",
+    "url": "https://www.jug-da.de/2026/11/moderne-java-anwendungen/",
+    "start": "2026-11-19T18:30:00",
+    "end": "2026-11-19T20:30:00",
+    "timezone": "Europe/Berlin"
+  }
+]
+```
+
+| Feld | Bedeutung |
+| --- | --- |
+| `uid` | Eindeutige Kennung. **Muss mit dem Datum der `eventId` ohne Bindestriche beginnen** – siehe Kasten unten. |
+| `summary` | Vollständiger Titel inkl. Sprecher. Erscheint in Betreffzeilen, Kalendereintrag und Admin-Bereich. |
+| `title`, `speaker` | Titel und Sprecher einzeln. |
+| `description` | Beschreibungstext, landet in der Kalenderdatei. |
+| `location` | Ort. Die Werte `Online` und `Virtuell` haben eine Sonderbedeutung, siehe [_online_events](#_online_events). |
+| `url` | Link zur Veranstaltungsseite. |
+| `start`, `end` | Beginn und Ende als `JJJJ-MM-TTTHH:MM:SS`, **ohne** Zeitzonenangabe. |
+| `timezone` | Zeitzone dazu, z.B. `Europe/Berlin`. |
+
+Zusätzliche Felder in der Datei stören nicht – die App ignoriert alles, was sie nicht kennt.
+
+<dl><dt><strong>❗ IMPORTANT: So findet die App die richtige Veranstaltung</strong></dt><dd>
+
+Die Zuordnung läuft über die `uid`: Die App sucht den ersten Eintrag, dessen `uid` mit der
+`eventId` **ohne Bindestriche** beginnt.
+
+Für `eventId=2026-11-19` wird also nach einer `uid` gesucht, die mit `20261119` anfängt –
+etwa `20261119@jugda`. Beginnt die `uid` mit irgendetwas anderem, findet die App die
+Veranstaltung nicht, selbst wenn `start` das richtige Datum enthält.
+</dd></dl>
+
+### Zwischenspeicher
+
+Die Events-Datei wird für **5 Minuten** zwischengespeichert. Änderungen an der Datei sind
+also nicht sofort sichtbar. Wer gerade etwas korrigiert hat und es nicht angezeigt bekommt,
+wartet einfach kurz.
+
+## E-Mails an die Teilnehmer
+
+### Anmeldebestätigung
+
+Geht automatisch nach jeder Anmeldung raus und enthält:
+
+* Anrede mit Namen und die Veranstaltungsdaten
+* bei Wartelistenplätzen einen entsprechenden Hinweis statt der Zusage
+* einen Link zum Herunterladen der Kalenderdatei sowie einen Link zum direkten Eintragen
+  in Google Kalender
+* den persönlichen Abmeldelink
+
+Ob sie tatsächlich rausgegangen ist, steht in der Teilnehmerliste in der Spalte **Mail** –
+siehe [Teilnehmerliste eines Events](#teilnehmerliste-eines-events).
+
+### Nachrück-Benachrichtigung
+
+Geht automatisch an die Person, die von der Warteliste auf die Teilnehmerliste nachgerückt
+ist – mit Glückwunsch, Veranstaltungsdaten und ebenfalls Kalender- und Abmeldelink.
+
+### Absenderadresse
+
+Als Antwortadresse (`Reply-To`) verwenden alle E-Mails den Wert, der im Admin-Bereich unter
+[JUG Data (Stammdaten)](#jug-data-stammdaten) hinterlegt ist. Antworten der Teilnehmer landen also direkt beim
+Orga-Team der JUG.
+
+**📌 NOTE**\
+Der Versand läuft im Hintergrund. Zwischen dem Absenden des Formulars und dem
+Eintreffen der E-Mail können ein paar Sekunden vergehen – die Danke-Seite erscheint sofort,
+unabhängig davon.
+
+## Online-Events
+
+Für Veranstaltungen, die online stattfinden, gibt es eine eigene Landingpage mit dem
+Einwahllink. Der Vorteil: Der Link muss nicht in jede Mail kopiert werden und kann noch
+kurzfristig geändert werden.
+
+So wird sie eingerichtet:
+
+1. In der Events-Datei bei `location` den Wert `Online` (oder `Virtuell`) eintragen.
+2. Im Admin-Bereich auf der Detailseite des Events unter **Zusätzliche Event-Daten** den
+  Meeting-Link hinterlegen.
+3. Fertig – die Seite ist unter `/meeting/{mandant}/{eventId}` erreichbar und zeigt Titel,
+  Uhrzeit, den Einwahl-Button und den Hinweistext zu den eingesetzten Werkzeugen.
+
+<dl><dt><strong>❗ IMPORTANT</strong></dt><dd>
+
+Die Meeting-Seite ist **nur am Tag der Veranstaltung** erreichbar. An allen anderen Tagen
+erscheint ein Hinweis, dass die Seite nicht verfügbar ist. Das ist Absicht – der Link kann
+gefahrlos vorab verschickt werden.
+</dd></dl>
+
+Steht `location` auf `Online` oder `Virtuell`, trägt außerdem die Kalenderdatei nicht den
+Ort, sondern die Adresse dieser Meeting-Seite als Ort und Link ein. Teilnehmer kommen dann
+direkt aus ihrem Kalendereintrag zur Einwahl.
+
+## Der Admin-Bereich
+
+### Anmelden
+
+Der Einstieg ist `https://registration.ijug.eu/admin/{mandant}/events`. Die Anmeldung
+läuft über den iJUG-Keycloak; nach erfolgreichem Login geht es automatisch zurück zur
+gewünschten Seite. Abgemeldet wird über das eigene Kürzel unten links in der Navigation.
+Die Abmeldung gilt auch im Keycloak, nicht nur in dieser Anwendung; danach landet man
+wieder am Admin-Bereich der eigenen JUG – also beim Login. Auf einem geteilten Rechner ist
+damit der nächste Anmeldevorgang direkt startklar.
+
+Wer ein gültiges Konto hat, aber nicht die Rolle des Mandanten, bekommt „No access to
+tenant" zu sehen. Dann fehlt die passende Rolle im Keycloak.
+
+### Navigation
+
+Links steht eine Leiste mit Logo und Namen der JUG und den drei Einträgen für die tägliche
+Arbeit:
+
+* **Events / Registrierungen** – Anmeldungen ansehen und verwalten
+* **JUG Data** – Stammdaten der JUG
+* **Texte** – die Hilfetexte am Anmeldeformular und auf der Meeting-Seite
+
+Ganz unten in der Leiste steht der eigene Name. Das Klappmenü dahinter führt zum Logout und,
+nur bei Konten mit der zusätzlichen Rolle `admin`, zu den beiden Betreiber-Seiten
+[Neue JUG anlegen](#neue-jug-anlegen) und [Logs](#logs). Wer diese Einträge nicht sieht, dem fehlt die Rolle – für
+die Arbeit einer JUG werden beide Seiten nicht gebraucht.
+
+Unter dem Logout steht die Version der laufenden Anwendung. Bei Rückfragen an den Betreiber
+gehört sie in die erste Zeile der Mail.
+
+### Events / Registrierungen
+
+Die Startseite listet alle Veranstaltungen, zu denen es Anmeldungen gibt, mit der jeweiligen
+Anzahl. Ein Klick auf die Event-ID führt zur Teilnehmerliste.
+
+**📌 NOTE**\
+Die Liste entsteht aus den vorhandenen Anmeldungen, nicht aus der Events-Datei. Eine
+Veranstaltung ohne eine einzige Anmeldung taucht hier also nicht auf. Und weil die Daten
+etwa eine Woche nach der Veranstaltung gelöscht werden, verschwinden vergangene Events mit
+der Zeit von selbst aus der Liste.
+
+### Teilnehmerliste eines Events
+
+Oben stehen Datum, Titel und die Gesamtzahl der Anmeldungen; der Titel verlinkt auf die
+Veranstaltungsseite. Ist ein Meeting-Link hinterlegt, erscheint zusätzlich der Button
+**Zum Online-Meeting**.
+
+Die Tabelle zeigt pro Anmeldung:
+
+| Spalte | Bedeutung |
+| --- | --- |
+| Lfd.Nr. | Laufende Nummer mit Auswahlkästchen. Das Kästchen in der Kopfzeile wählt alle aus. |
+| Name / E-Mail | Angaben des Teilnehmers; die E-Mail-Adresse ist als `mailto:`-Link anklickbar. |
+| Stammtisch | Häkchen – nimmt am Stammtisch teil. |
+| Remote | Bildschirm-Symbol – nimmt nur online teil. |
+| Warteliste | Sanduhr-Symbol – steht auf der Warteliste. |
+| Datum (UTC) | Zeitpunkt der Anmeldung. **In UTC**, im Sommer also zwei Stunden vor der lokalen Zeit. |
+| Mail | Ob die E-Mail an diesen Teilnehmer rausgegangen ist. Grünes Kuvert: zugestellt – der Zeitpunkt steht in der Sprechblase, wenn man mit der Maus darüber geht. Rotes Kuvert: noch nicht zugestellt. |
+| Papierkorb-Symbol | Anmeldung löschen, mit Sicherheitsabfrage. |
+
+<dl><dt><strong>💡 TIP</strong></dt><dd>
+
+Ein **rotes Kuvert direkt nach einer Anmeldung ist normal**: Der Versand läuft im Hintergrund,
+ein kurzes Neuladen der Seite später steht das Kuvert auf Grün.
+
+Bleibt es rot, ist die Mail wirklich nicht rausgegangen – dann hilft nur, die Person auf
+anderem Weg zu erreichen. Auch nach dem Nachrücken von der Warteliste springt das Kuvert
+kurz auf Rot, bis die Nachrück-Benachrichtigung zugestellt ist.
+</dd></dl>
+
+Beim Löschen eines regulären Teilnehmers rückt automatisch die erste Person von der
+Warteliste nach und wird benachrichtigt – genau wie bei einer Abmeldung durch den
+Teilnehmer selbst.
+
+Darunter liegen drei aufklappbare Bereiche:
+
+#### Zeige Namen kopierbar
+
+Öffnet ein Textfeld mit allen Namen untereinander, fertig zum Kopieren – praktisch für
+Teilnehmerlisten, Verlosungen oder den Einlass.
+
+#### Zusätzliche Event-Daten
+
+Hier wird der **Meeting-Link** für Online-Veranstaltungen hinterlegt und mit **Speichern**
+gesichert. Eine Bestätigung meldet den Erfolg.
+
+#### Schreibe E-Mail an Teilnehmer
+
+Der Rundmail-Versand an ausgewählte Teilnehmer.
+
+<dl><dt><strong>❗ IMPORTANT</strong></dt><dd>
+
+Es werden nur die Teilnehmer angeschrieben, deren Kästchen in der Tabelle **angehakt** ist.
+Ohne Auswahl wird nichts verschickt. Für „an alle" zuerst das Kästchen in der Kopfzeile
+anklicken.
+</dd></dl>
+
+Betreff und Nachricht sind mit einem Vorschlag für die Einladung zu einem Online-Vortrag
+vorbelegt und können frei überschrieben werden. Zeilenumbrüche bleiben erhalten.
+
+In **Betreff und Nachricht** lassen sich Platzhalter verwenden, die pro Empfänger ersetzt
+werden:
+
+| Platzhalter | Wird ersetzt durch |
+| --- | --- |
+| `{{name}}` | Name des jeweiligen Empfängers |
+| `{{eventId}}` | Die Event-ID, also das Datum |
+| `{{tenant.name}}` | Name der JUG |
+| `{{baseUrl}}` | Basisadresse der App, inkl. abschließendem Schrägstrich |
+
+Ein Beispiel:
+
+```
+Hallo {{name}}!
+
+der Link zur Einwahl für heute Abend:
+{{baseUrl}}meeting/jugda/{{eventId}}
+
+Viele Grüße
+Dein {{tenant.name}} Orga-Team
+```
+
+**🔥 CAUTION**\
+Die doppelten geschweiften Klammern sind Absicht – ein Platzhalter mit nur einer
+Klammer wird zwar meist auch ersetzt, aber die doppelte Schreibweise ist die zuverlässige.
+Ein Tippfehler im Platzhalter wird **nicht** ersetzt, sondern steht so in der Mail beim
+Empfänger. Am besten erst an sich selbst testen: eine eigene Anmeldung anlegen, nur diese
+auswählen und die Mail abschicken.
+
+Der Versand wird mit „Nachricht an N Teilnehmer gesendet" bestätigt. Bei mehr als 50
+Empfängern verschickt die App die Mails in Blöcken; das dauert entsprechend länger.
+
+### JUG Data (Stammdaten)
+
+Hier stehen die Grunddaten der JUG. Sie wirken sich auf Seitenkopf, E-Mails und
+Kalendereinträge aus.
+
+| Feld | Bedeutung |
+| --- | --- |
+| ID | Die Mandanten-ID. Nur zur Anzeige, nicht änderbar. |
+| Name | Name der JUG. Erscheint in Betreffzeilen, Grußformeln und im Kalendereintrag. |
+| Website | Adresse der eigenen Website. |
+| Datenschutz-URL / Impressum-URL | Werden in der Fußzeile verlinkt. |
+| Logo-URL | Adresse der Logodatei. Erscheint im Seitenkopf und in der Navigation des Admin-Bereichs. |
+| Reply-To | Antwortadresse aller Mails, im Format `JUG Darmstadt <info@jug-da.de>`. |
+| Events-URL | Adresse der JSON-Datei mit den Veranstaltungsdaten, siehe [_die_events_datei](#_die_events_datei). |
+| Eigenes CSS | Optionales Stylesheet für die Teilnehmer-Seiten, siehe [Eigenes CSS](#eigenes-css). |
+
+**Speichern** schreibt die Änderungen sofort. Es gibt keine Rückfrage und keine Historie –
+insbesondere bei der Events-URL lohnt sich ein prüfender Blick, denn ein Tippfehler dort
+lässt alle Veranstaltungsdetails verschwinden.
+
+#### Eigenes CSS
+
+Das Feld **Eigenes CSS** ist leer vorbelegt und darf leer bleiben; dann bleibt es beim
+Standard-Layout. Wer die eingebetteten Seiten an das Aussehen der eigenen Website angleichen
+möchte, trägt hier ganz normale CSS-Regeln ein – ohne `<style>`-Tag drumherum:
+
+```css
+body { font-family: Georgia, serif; }
+h3 { color: #005f73; }
+.btn-primary { background-color: #005f73; border-color: #005f73; }
+```
+
+Ein paar Punkte dazu:
+
+* Das Stylesheet wirkt **nur auf die Teilnehmer-Seiten**: Anmeldung, Danke-Seite, Abmeldung,
+  „Anmeldung geschlossen", „Anmeldung noch nicht offen" und die Meeting-Seite. Der Admin-Bereich
+  bleibt bewusst unberührt – ein missglücktes Stylesheet soll nicht ausgerechnet das Formular
+  unbedienbar machen, in dem man es wieder repariert. Zum Ausprobieren also immer die
+  Anmeldeseite selbst aufrufen.
+* Es wird **nach** Bootstrap geladen. Eigene Regeln gewinnen deshalb in der Regel, ohne dass
+  `!important` nötig wäre.
+* E-Mails sind nicht betroffen. Deren Aussehen liegt in den Mail-Vorlagen der Anwendung.
+* `</style>` ist nicht erlaubt und wird beim Speichern mit einer Fehlermeldung abgelehnt – die
+  Zeichenfolge würde das Stylesheet beenden und den Rest als HTML in die Seite schreiben. In
+  echtem CSS kommt sie ohnehin nicht vor.
+* Die Höhenmeldung an die einbettende Seite (siehe [Die Höhe des iframes](#die-höhe-des-iframes)) misst die Höhe
+  **nach** Anwendung des Stylesheets. Feste Höhen oder `position: fixed` auf `body` können sie
+  daher aus dem Tritt bringen.
+
+Auch hier gibt es weder Rückfrage noch Historie: Speichern überschreibt das bisherige
+Stylesheet. Bei größeren Anpassungen lohnt sich eine Kopie außerhalb der Anwendung.
+
+### Texte (Hilfetexte)
+
+Hier stehen die erklärenden Texte, die auf dem Anmeldeformular und auf der Meeting-Seite
+erscheinen – dieselben Schlüssel wie unter [Hilfetexte anpassen](#hilfetexte-anpassen). Jedes Feld zeigt seinen
+Schlüssel und einen Hinweis, wo der Text auftaucht.
+
+**Speichern** schreibt alle Felder auf einmal; die Änderung ist beim nächsten Aufruf des
+Anmeldeformulars sofort sichtbar. Es gibt weder eine Rückfrage noch eine Historie, ein
+überschriebener Text ist also weg.
+
+Die Liste der Schlüssel ist fest: Es sind genau die Texte, die die Anwendung auch anzeigt.
+Neue Schlüssel anzulegen ergibt daher keinen Sinn und ist nicht vorgesehen. Ein leer
+gelassenes Feld lässt die entsprechende Stelle im Formular schlicht leer.
+
+HTML wird nicht interpretiert, sondern als Text ausgegeben – Auszeichnungen wie `<b>` also
+bitte weglassen.
+
+### Neue JUG anlegen
+
+Diese Seite legt eine weitere JUG in der Anwendung an. Erreichbar ist sie über das Klappmenü
+am eigenen Namen unten links in der Leiste. Sie ist den Betreibern vorbehalten und erfordert zusätzlich zur
+Mandantenrolle die Rolle `admin`; für die Orga-Teams der einzelnen JUGs ist sie gesperrt und
+taucht in deren Menü gar nicht erst auf.
+
+Einzutragen sind nur zwei Angaben:
+
+| Feld | Bedeutung |
+| --- | --- |
+| ID | Die Mandanten-ID, z.B. `jugda`. Erlaubt sind Kleinbuchstaben, Ziffern und Bindestriche. Sie steht in sämtlichen URLs der JUG und lässt sich später **nicht** mehr ändern. |
+| Name | Ausgeschriebener Name, z.B. `JUG Darmstadt`. Erscheint in Betreffzeilen, Grußformeln und im Kalendereintrag. |
+
+Alles Übrige – Website, Datenschutz- und Impressum-URL, Logo, Reply-To, Events-URL, ein
+eventuell hinterlegtes eigenes CSS sowie sämtliche Hilfetexte – wird von der Vorlage-JUG `test`
+kopiert. Die neue JUG ist damit sofort
+funktionsfähig, zeigt aber noch die Daten der Vorlage. Der nächste Schritt ist deshalb immer
+ein Durchgang durch [JUG Data (Stammdaten)](#jug-data-stammdaten) und [Texte (Hilfetexte)](#texte-hilfetexte) der neuen JUG.
+
+**❗ IMPORTANT**\
+Die Anwendung kann keine Benutzerrechte vergeben. Damit das Orga-Team der neuen JUG
+sich anmelden kann, muss im Keycloak am Client `registration` eine Client-Rolle mit **exakt** der
+neuen Mandanten-ID angelegt und den betreffenden Konten zugewiesen werden. Ohne diese Rolle ist
+der Admin-Bereich der neuen JUG für niemanden erreichbar – das Anmeldeformular für die
+Teilnehmer funktioniert dagegen sofort.
+
+### Logs
+
+Zeigt die letzten Zeilen des Serverprotokolls, standardmäßig 2000, höchstens 3000. Aufgerufen
+wird sie als **Server-Logs** über dasselbe Klappmenü. Diese Seite ist der Fehlersuche vorbehalten
+und erfordert zusätzlich zur Mandantenrolle die Rolle `admin`. Für den Alltagsbetrieb wird sie nicht gebraucht.
+
+### Teilnehmerliste als JSON
+
+Dieselbe Adresse wie die Teilnehmerliste liefert die Daten auch maschinenlesbar, wenn JSON
+angefordert wird:
+
+```bash
+curl -H "Accept: application/json" \
+     https://registration.ijug.eu/admin/jugda/events/2026-11-19
+```
+
+Das ist der Weg für eigene Auswertungen oder einen Export nach Excel. Ein Login ist auch
+hier nötig.
+
+## Datenschutz und Löschfristen
+
+* Erhoben werden ausschließlich Name, E-Mail-Adresse und die angekreuzten Optionen.
+* Jede Anmeldung bekommt ein Verfallsdatum von **einer Woche nach der Veranstaltung**. Ein
+  nächtlicher Aufräumlauf löscht abgelaufene Anmeldungen dann endgültig.
+* Teilnehmer können sich jederzeit selbst abmelden und ihre Daten damit löschen – über den
+  Link in der Bestätigungsmail oder über das Abmeldeformular.
+* Die Daten jeder JUG sind vollständig voneinander getrennt. Ohne die passende Rolle ist
+  kein Zugriff auf einen fremden Mandanten möglich.
+* Die Anmeldeseiten sind mit `noindex, nofollow` ausgezeichnet und landen damit nicht in
+  Suchmaschinen.
+
+Die Datenschutz- und Impressumslinks in der Fußzeile zeigen auf die Seiten der jeweiligen
+JUG – die Inhalte dort zu pflegen bleibt deren Aufgabe.
+
+## Hilfetexte anpassen
+
+Die erklärenden Texte am Anmeldeformular sind pro JUG hinterlegt und individuell
+anpassbar:
+
+| Schlüssel | Wo er erscheint |
+| --- | --- |
+| `registration.name` | Hinweis unter dem Feld „Name" |
+| `registration.email` | Hinweis unter dem Feld „E-Mail" |
+| `registration.video` | Erläuterung zur Videoaufzeichnung |
+| `registration.disclaimer` | Datenschutzhinweis über der Einwilligungs-Checkbox |
+| `registration.waitlist` | Text im Wartelisten-Modus |
+| `meeting.tools` | Hinweis zu den eingesetzten Konferenzwerkzeugen auf der Meeting-Seite |
+
+Bearbeitet werden diese Texte im Admin-Bereich unter **Texte**, siehe
+[Texte (Hilfetexte)](#texte-hilfetexte). Jede JUG pflegt dabei nur ihre eigenen Texte.
+
+## Fehlersuche
+
+| Symptom | Ursache und Abhilfe |
+| --- | --- |
+| Statt des Formulars erscheint eine Fehlerseite | Die `eventId` ist kein gültiges Datum im Format `JJJJ-MM-TT`. |
+| „Die Anmeldung startet erst am …", obwohl sie laufen sollte | `opensBeforeInMonths` steht zu niedrig. Wert erhöhen. |
+| „Die Anmeldefrist ist leider schon abgelaufen", obwohl sie laufen sollte | Der `deadline` liegt in der Vergangenheit. Ohne eigene Angabe ist das der Veranstaltungstag um 18:00 Uhr – für Veranstaltungen, die früher beginnen, muss der Wert gesetzt werden. |
+| Bestätigungsmail ohne Titel und Datum im Betreff | Die Veranstaltung wurde in der Events-Datei nicht gefunden. Meist stimmt die `uid` nicht mit dem Datum überein, siehe [_die_events_datei](#_die_events_datei). |
+| Änderung an der Events-Datei zeigt keine Wirkung | Der Zwischenspeicher hält die Daten 5 Minuten. Kurz warten. |
+| Im Admin-Bereich erscheint „No access to tenant" | Dem Konto fehlt im Keycloak die Rolle mit dem Namen der Mandanten-ID. |
+| Die Meeting-Seite meldet „nicht verfügbar" | Sie ist nur am Tag der Veranstaltung erreichbar. Andernfalls fehlt der Meeting-Link oder die Veranstaltung steht nicht in der Events-Datei. |
+| Das eingebettete Formular hat eine eigene Scrollleiste | Die Höhe des `<iframe>` reicht nicht. Wert erhöhen und auf dem Handy gegenprüfen – oder gleich das automatische Mitwachsen einbauen. |
+| Das automatische Mitwachsen tut nichts | Meist stimmt die Adresse in der `event.origin`-Prüfung nicht exakt mit der Adresse der App überein (Tippfehler, `http` statt `https`, Schrägstrich am Ende). Ein `console.log` im Listener zeigt, ob überhaupt Nachrichten ankommen. |
+| Die Bestätigungsmail kommt nicht sofort | Der Versand läuft im Hintergrund, ein paar Sekunden Verzögerung sind normal. Ob sie raus ist, zeigt die Spalte **Mail** in der Teilnehmerliste: Grün heißt zugestellt. Bleibt das Kuvert rot, ist der Versand fehlgeschlagen – Details stehen dann in den Logs. |
