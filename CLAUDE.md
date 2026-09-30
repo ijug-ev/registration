@@ -48,6 +48,7 @@ Two things to know when the next LTS arrives:
 - Admin UI: http://localhost:8080/admin/test/events (credentials: `alice` / `alice`)
 - Mailpit UI: http://localhost:8080/q/dev-ui/quarkus-mailpit/mailpit-ui
 - Keycloak dev server: http://localhost:8081
+- Health: http://localhost:8080/q/health
 
 ## Architecture
 
@@ -90,6 +91,30 @@ creates the client role of the same name by hand.
 [^1]: Two resource methods share that path. The JSON one carries `qs=0.9`, so a client that sends no
 `Accept` header gets the page -- without it the runtime picks whichever method it discovered first, which
 is not stable across JVM runs and failed the menu test in roughly one build in eight.
+
+### Health Endpoints
+
+`quarkus-smallrye-health` exposes `/q/health`, `/q/health/live`, `/q/health/ready` and
+`/q/health/started` (issue #61). There is **no hand-written `HealthCheck` in this code base**: the
+single check that shows up is the datasource readiness check `quarkus-agroal` contributes by itself.
+
+- **The external events feed is deliberately not a health check.** `EventService` loads each tenant's
+  events JSON from a third-party URL. A readiness probe that went red when someone else's server
+  hiccups would pull a working app out of rotation, while the registration pages keep serving from the
+  5-minute Caffeine cache. Feed failures belong in the log.
+- **The endpoints are anonymous and sit on the main port**, which is what lets an external uptime
+  monitor reach them. They therefore have to stay out of `quarkus.http.auth.permission`: with
+  `quarkus.oidc.application-type=web-app` a secured probe path answers **302 to Keycloak**, and a
+  monitor that only asks "did I get a response" never notices. `HealthCheckTest` pins that down
+  (`redirects().follow(false)`), plus the fact that readiness carries at least one check -- without
+  that, `quarkus.datasource.health.enabled=false` would leave a probe reporting UP while testing
+  nothing.
+
+`docker-compose.yml` consumes them: `pg_isready` on the database, `curl -f .../q/health/ready` on the
+app (the `ubi9/openjdk-25-runtime` image has `curl`, but no `wget`), and the app now waits for
+`condition: service_healthy` instead of a bare `depends_on: database` -- which used to let Flyway race
+the database's first accepting connection. Compose does not restart an unhealthy container on its own;
+the healthcheck buys ordering and visibility, not self-healing.
 
 ### Key Components
 
