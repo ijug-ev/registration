@@ -34,7 +34,7 @@ jobs:
           cache: 'maven'
 
       - name: Cache Maven dependencies
-        uses: actions/cache@v5
+        uses: https://github.com/actions/cache@v5
         with:
           path: |
             ~/.m2/repository
