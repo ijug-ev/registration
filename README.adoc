@@ -44,6 +44,9 @@ For runnint http requests manually, see link:misc/run-http-requests-manually.ado
 
 There is a link:.github/workflows/docker.yml[GH action] to build and push a (multi-platform arm64/amd64) Docker image to `ghcr.io/ijug-ev/registration:<version>`.
 
+Current image version:
+image:https://ghcr-badge.egpl.dev/ijug-ev/registration/latest_tag?label=ghcr.io/ijug-ev/registration[ghcr.io/ijug-ev/registration,link=https://github.com/ijug-ev/registration/pkgs/container/registration]
+
 This action runs either
 
 * on pushs to `main` branch, then the image version tag will be `latest`
