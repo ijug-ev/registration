@@ -32,10 +32,9 @@ Live URL pattern: `https://registration.ijug.eu`
 The project tracks the **latest Java LTS** and nothing newer -- it belongs to a Java user group, so it
 should show the version people are expected to run in production (issue #54). Currently **Java 25**.
 
-Raising it means five places, not one: `maven.compiler.release` in `pom.xml`, the `java-version` of the
-four CI workflows (`.github/workflows/` **and** `.forgejo/workflows/` -- the project is mirrored to
-git.ijug.eu), the `ubi9/openjdk-<v>-runtime` base image in `src/main/docker/Dockerfile.jvm` and
-`Dockerfile.legacy-jar`, plus the prerequisite in `README.adoc`.
+Raising it means four places, not one: `maven.compiler.release` in `pom.xml`, the `java-version` of the
+two CI workflows in `.forgejo/workflows/`, the `ubi9/openjdk-<v>-runtime` base image in
+`src/main/docker/Dockerfile.jvm` and `Dockerfile.legacy-jar`, plus the prerequisite in `README.adoc`.
 
 Two things to know when the next LTS arrives:
 - Since JDK 23 javac no longer finds annotation processors on the classpath by itself, which silently
@@ -332,5 +331,17 @@ least the viewport height, which would keep the iframe from ever shrinking again
   allows `*`, the production client at id.ijug.eu has to permit `https://registration.ijug.eu/admin/*`.
 - Dev mode uses a local Keycloak DevService with `ijug-realm.json`
 
+### Dependency Updates (Renovate)
+
+Forgejo (git.ijug.eu) is the leading repository, GitHub is going away -- Dependabot was therefore
+replaced by a self-hosted Renovate (`platform: forgejo`), configured in `renovate.json`.
+
+- **Actions from the instance's own `actions` organisation are referenced with their full URL**
+  (`https://git.ijug.eu/actions/checkout@v6`) in `.forgejo/workflows/`. A bare `actions/checkout@v6`
+  runs the same, but Renovate looks bare references up on github.com and would propose tags the local
+  mirror may not have. Do not shorten them back.
+- `java-jdk`/`java-jre` updates are disabled: Renovate reads `java-version` of `setup-java` (temurin)
+  and would propose the next non-LTS release. Raising Java is a manual four-place change (see above).
+
 ### Production Deployment
-Deployed via Docker Compose (`docker-compose.yml`). Image: `ghcr.io/ijug-ev/registration:latest`. Built and pushed by GitHub Actions on pushes to `main` (tagged `latest`) or `v*` tags (tagged with version).
+Deployed via Docker Compose (`docker-compose.yml`). Image: `git.ijug.eu/ijug-ev/registration:latest`. Built and pushed by the Forgejo workflow `.forgejo/workflows/docker.yml` on pushes to `main` (tagged `latest`) or `v*` tags (tagged with version).

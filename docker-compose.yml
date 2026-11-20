@@ -16,7 +16,7 @@ services:
     restart: always
 
   application:
-    image: ghcr.io/ijug-ev/registration:latest
+    image: git.ijug.eu/ijug-ev/registration:latest
     depends_on:
       database:
         condition: service_healthy

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":semanticCommitTypeAll(chore)"
+  ],
+  "timezone": "Europe/Berlin",
+  "schedule": ["* * * * 1"],
+  "prConcurrentLimit": 10,
+  "packageRules": [
+    {
+      "description": "Actions change rarely, a monthly batch is enough",
+      "matchManagers": ["github-actions"],
+      "schedule": ["* * 1 * *"]
+    },
+    {
+      "description": "The project tracks the latest Java LTS only, and raising it touches four places (see CLAUDE.md) -- never a Renovate PR",
+      "matchPackageNames": ["java-jdk", "java-jre"],
+      "enabled": false
+    }
+  ]
+}
